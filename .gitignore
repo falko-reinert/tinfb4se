@@ -63,6 +63,9 @@ build/
 ## OS Specific
 .DS_Store
 
+## PlantUML
+.plantuml
+
 # Keep local release credentials out of Git.
 android/signing.properties
 android/*.jks
