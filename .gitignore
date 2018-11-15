@@ -64,7 +64,7 @@ build/
 .DS_Store
 
 ## PlantUML
-.plantuml
+*.plantuml
 
 # Keep local release credentials out of Git.
 android/signing.properties
