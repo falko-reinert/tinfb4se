@@ -5,16 +5,19 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
-import java.util.List;
-
 import de.codecrunch.TowerAttackGame;
-import de.codecrunch.controller.C_LevelSelect;
+import de.codecrunch.model.M_Map;
 
-public class V_EditorLevelSelect extends VA_Screen {
-    C_LevelSelect selectController = new C_LevelSelect();
+public class V_EditorLevelSelect extends VA_LevelSelect {
+
 
     public V_EditorLevelSelect(TowerAttackGame game) {
         super(game);
+    }
+
+    @Override
+    public void startMap(M_Map map) {
+        towerAttackGame.startEditor(map);
     }
 
     @Override
@@ -22,23 +25,13 @@ public class V_EditorLevelSelect extends VA_Screen {
         Table table = new Table();
         table.setFillParent(true);
         stage.addActor(table);
-        selectController.load();
 
-        TextButton newLevel = new TextButton("New Level", buttonSkin);
-        TextButton up = new TextButton("^", buttonSkin);
-        List<TextButton> levels = selectController.getLevelButtons(buttonSkin);
-        TextButton down = new TextButton("v", buttonSkin);
-        TextButton back = new TextButton("Back", buttonSkin);
+        TextButton newLevel = new TextButton("New Level", uiSkin);
+        TextButton back = new TextButton("Back", uiSkin);
 
-        table.add(newLevel).fillX().uniformX();
-        table.add(up).fillX().uniformX();
-        table.row().pad(10, 0, 10, 0);
-        levels.forEach(level -> {
-            table.add(level).fillX().uniformX();
-            table.row();
-        });
+        table.add(newLevel).row();
+        addLevelButtons(table);
         table.add(back);
-        table.add(down);
 
         newLevel.addListener(new ChangeListener() {
             @Override
@@ -54,4 +47,6 @@ public class V_EditorLevelSelect extends VA_Screen {
             }
         });
     }
+
+
 }

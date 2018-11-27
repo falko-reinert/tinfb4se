@@ -66,6 +66,9 @@ build/
 ## PlantUML
 *.plantuml
 
+## Project Files
+*.map
+
 # Keep local release credentials out of Git.
 android/signing.properties
 android/*.jks
