@@ -1,5 +1,7 @@
 buildscript {
-    
+    plugins {
+        id "org.sonarqube" version "2.7"
+    }
 
     repositories {
         mavenLocal()
@@ -77,14 +79,8 @@ project(":core") {
 
     }
 }
-plugins {
-  id "org.sonarqube" version "2.7"
-}
-./gradlew sonarqube \
-  -Dsonar.projectKey=OrangeFreitag_tinfb4se \
-  -Dsonar.organization=orangefreitag-github \
-  -Dsonar.host.url=https://sonarcloud.io \
-  -Dsonar.login=REMOVED_HISTORICAL_SONAR_TOKEN
+
+
 tasks.eclipse.doLast {
     delete ".project"
 }
