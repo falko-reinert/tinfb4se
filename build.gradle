@@ -1,7 +1,5 @@
 buildscript {
-    plugins {
-        id "org.sonarqube" version "2.7"
-    }
+
 
     repositories {
         mavenLocal()
@@ -12,14 +10,16 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.3.2'
+        classpath 'com.android.tools.build:gradle:3.4.0'
         classpath 'me.tatarka:gradle-retrolambda:3.2.5'
+        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7"
     }
 }
 
 allprojects {
     apply plugin: "eclipse"
     apply plugin: "idea"
+    apply plugin:"org.sonarqube"
 
     version = '1.0'
     ext {
