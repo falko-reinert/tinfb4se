@@ -35,7 +35,7 @@ task dist(type: Jar) {
 }
 
 dist.dependsOn classes
-
+//test
 eclipse {
     project {
         name = appName + "-desktop"
