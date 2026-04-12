@@ -31,6 +31,12 @@ allprojects {
         aiVersion = '1.8.0'
     }
 
+    sonar {
+  properties {
+    property "sonar.projectKey", "OrangeFreitag_tinfb4seFailSafe"
+    property "sonar.organization", "orangefreitag-github"
+  }
+
     repositories {
         mavenLocal()
         mavenCentral()
