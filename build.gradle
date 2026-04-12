@@ -36,6 +36,7 @@ allprojects {
     property "sonar.projectKey", "OrangeFreitag_tinfb4seFailSafe"
     property "sonar.organization", "orangefreitag-github"
   }
+}
 
     repositories {
         mavenLocal()
