@@ -13,8 +13,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
-import javax.xml.soap.Text;
-
 public class V_Settings extends VA_Screen {
 
     public TextButton save;
