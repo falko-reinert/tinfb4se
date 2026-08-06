@@ -1,6 +1,7 @@
 package de.codecrunch.view;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -9,9 +10,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
-
-import java.awt.event.ActionEvent;
 
 public abstract class VA_Screen implements Screen {
 
@@ -20,9 +18,6 @@ public abstract class VA_Screen implements Screen {
 
     public VA_Screen() {
         stage = new Stage(new FitViewport(640, 360));
-        Gdx.input.setInputProcessor(stage);
-        stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
-        stage.draw();
     }
 
     @Override
@@ -59,10 +54,15 @@ public abstract class VA_Screen implements Screen {
 
     @Override
     public void dispose() {
+        stage.dispose();
     }
 
-    public Stage getStage() {
+    public InputProcessor getInputProcessor() {
         return stage;
+    }
+
+    public static void disposeSharedResources() {
+        uiSkin.dispose();
     }
 
     public void showDialog(Dialog dialog) {

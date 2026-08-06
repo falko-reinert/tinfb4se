@@ -19,7 +19,6 @@ public class TowerAttackGame extends Game implements ScreenNavigator {
     private C_Game game;
     private C_Editor editor;
 
-    private VA_Screen currentScreen;
     private V_Game gameScreen;
     private V_GameLevelSelect levelSelectScreen;
     private V_Menu menuScreen;
@@ -35,68 +34,93 @@ public class TowerAttackGame extends Game implements ScreenNavigator {
 
     @Override
     public void navigateTo(ScreenId screenId) {
-         modifyScreen(screenId, true);
+        activateScreen(getOrCreateScreen(screenId));
     }
 
-    private void setupScreen(ScreenId screenId) {
-        modifyScreen(screenId, false);
-    }
-
-    private void modifyScreen(ScreenId screenId, boolean changeTo) {
+    private VA_Screen getOrCreateScreen(ScreenId screenId) {
         switch (screenId) {
             case GAME:
                 if (gameScreen == null) gameScreen = new V_Game();
-                currentScreen = gameScreen;
-                break;
+                return gameScreen;
             case GAME_LEVEL_SELECT:
                 if (levelSelectScreen == null)
                     levelSelectScreen = new V_GameLevelSelect(this, this::startGame);
-                currentScreen = levelSelectScreen;
-                break;
+                return levelSelectScreen;
             case MENU:
                 if (menuScreen == null) menuScreen = new V_Menu(this);
-                currentScreen = menuScreen;
-                break;
+                return menuScreen;
             case SETTINGS:
                 if (settingsScreen == null) settingsScreen = new V_Settings(this);
-                currentScreen = settingsScreen;
-                break;
+                return settingsScreen;
             case EDITOR:
                 if (editorScreen == null) editorScreen = new V_Editor(this);
-                currentScreen = editorScreen;
-                break;
+                return editorScreen;
             case EDITOR_LEVEL_SELECT:
                 if (editorLevelSelectScreen == null)
                     editorLevelSelectScreen = new V_EditorLevelSelect(this, this::startEditor);
-                currentScreen = editorLevelSelectScreen;
-                break;
-        }
-        if (changeTo) {
-            this.setScreen(currentScreen);
-            Gdx.input.setInputProcessor(currentScreen.getStage());
+                return editorLevelSelectScreen;
+            default:
+                throw new IllegalArgumentException("Unsupported screen: " + screenId);
         }
     }
 
+    private void activateScreen(VA_Screen nextScreen) {
+        setScreen(nextScreen);
+        Gdx.input.setInputProcessor(nextScreen.getInputProcessor());
+    }
+
     public void startEditor(M_Map map) {
-        editor = new C_Editor(this, map);
-        setupScreen(ScreenId.EDITOR);
-        editor.setView(editorScreen);
-        editorScreen.setController(editor);
-        editorScreen.loadUI();
-        navigateTo(ScreenId.EDITOR);
+        V_Editor nextScreen = new V_Editor(this);
+        C_Editor nextEditor = new C_Editor(this, map);
+        nextEditor.setView(nextScreen);
+        nextScreen.setController(nextEditor);
+        nextScreen.loadUI();
+
+        V_Editor previousScreen = editorScreen;
+        editor = nextEditor;
+        editorScreen = nextScreen;
+        activateScreen(nextScreen);
+        disposeScreen(previousScreen);
     }
 
     public void startGame(M_Map map) {
         //Loads 3d Models -> May be put in loading screen later.
         Model3DFactory.setup();
 
-        game = new C_Game(map);
-        setupScreen(ScreenId.GAME);
-        game.setView(gameScreen);
-        gameScreen.setController(game);
-        game.start();
-        navigateTo(ScreenId.GAME);
-        Gdx.input.setInputProcessor(gameScreen.new GameInputProcessor());
+        V_Game nextScreen = new V_Game();
+        C_Game nextGame = new C_Game(map);
+        nextGame.setView(nextScreen);
+        nextScreen.setController(nextGame);
+        nextGame.start();
+
+        C_Game previousGame = game;
+        V_Game previousScreen = gameScreen;
+        game = nextGame;
+        gameScreen = nextScreen;
+        activateScreen(nextScreen);
+        disposeGameSession(previousGame, previousScreen);
+    }
+
+    @Override
+    public void dispose() {
+        Gdx.input.setInputProcessor(null);
+        disposeGameSession(game, gameScreen);
+        disposeScreen(editorScreen);
+        disposeScreen(levelSelectScreen);
+        disposeScreen(menuScreen);
+        disposeScreen(settingsScreen);
+        disposeScreen(editorLevelSelectScreen);
+        Model3DFactory.dispose();
+        VA_Screen.disposeSharedResources();
+    }
+
+    private void disposeGameSession(C_Game gameController, V_Game screen) {
+        if (gameController != null) gameController.dispose();
+        disposeScreen(screen);
+    }
+
+    private void disposeScreen(VA_Screen screen) {
+        if (screen != null) screen.dispose();
     }
 
 }

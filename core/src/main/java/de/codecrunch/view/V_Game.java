@@ -34,6 +34,7 @@ public class V_Game extends VA_Screen {
 	private PointLight mouseLight = new PointLight().set(1f, 1f, 1f, 30f, 1f, 40f, 100f);
 
 	private float cameraMotion = 0f;
+	private final GameInputProcessor inputProcessor = new GameInputProcessor();
 
 	public V_Game() {
 		super();
@@ -71,7 +72,16 @@ public class V_Game extends VA_Screen {
 
 	@Override
 	public void dispose() {
+		super.dispose();
 		mapBatch.dispose();
+		towerBatch.dispose();
+		v_hud.dispose();
+		hudBatch.dispose();
+	}
+
+	@Override
+	public InputProcessor getInputProcessor() {
+		return inputProcessor;
 	}
 
 	@Override

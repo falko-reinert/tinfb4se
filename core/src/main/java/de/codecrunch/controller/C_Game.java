@@ -18,6 +18,7 @@ public class C_Game {
 	private C_Computer computer = new C_Computer(this);
 	private V_Game view;
 	private M_Map map;
+	private Task computerTask;
 
 	public C_Game(M_Map map) {
 		this.map = map;
@@ -37,7 +38,7 @@ public class C_Game {
 			}
 		});
 
-		Timer.instance().scheduleTask(new Task() {
+		computerTask = new Task() {
 			private int timerCount = 0;
 
 			@Override
@@ -46,11 +47,19 @@ public class C_Game {
 				computer.tick(timerCount);
 				timerCount++;
 			}
-		}, 0, 1);
+		};
+		Timer.instance().scheduleTask(computerTask, 0, 1);
 		Timer.instance().start();
 
 		computer.init(map);
 		view.setup();
+	}
+
+	public void dispose() {
+		if (computerTask != null) {
+			computerTask.cancel();
+			computerTask = null;
+		}
 	}
 	
 	public void placeTower(MA_Tower tower, int x, int y){
