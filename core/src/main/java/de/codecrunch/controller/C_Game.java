@@ -1,15 +1,11 @@
 package de.codecrunch.controller;
 
-import java.util.function.Consumer;
-
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.Timer.Task;
 
 import de.codecrunch.model.ME_TileState;
 import de.codecrunch.model.M_Game;
 import de.codecrunch.model.M_Map;
-import de.codecrunch.model.M_RenderBatch;
-import de.codecrunch.model.M_Tile;
 import de.codecrunch.model.tower.MA_Tower;
 import de.codecrunch.view.V_Game;
 
@@ -29,14 +25,7 @@ public class C_Game {
 	}
 
 	public void start() {
-		M_RenderBatch mapBatch = view.getMapBatch();
-		map.foreachTile(new Consumer<M_Tile>() {
-			@Override
-			public void accept(M_Tile t) {
-				t.updateGameModel();
-				mapBatch.addElement(t.getGameModel());
-			}
-		});
+		view.loadMap(map);
 
 		computerTask = new Task() {
 			private int timerCount = 0;
@@ -64,8 +53,7 @@ public class C_Game {
 	
 	public void placeTower(MA_Tower tower, int x, int y){
 			tower.setPos(x, y);
-			tower.getModel().transform.setTranslation(x * ME_TileState.tileDistance, 0.5f, y * ME_TileState.tileDistance);
-			view.getTowerBatch().addElement(tower.getModel());
+			view.addTower(tower);
 			computer.drawMoney(tower.getPrice());
 			map.getTile(x, y).setTileState(ME_TileState.OCCUPIED);
 			computer.updateDistancePathCount(map);

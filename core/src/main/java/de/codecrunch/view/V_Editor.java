@@ -3,26 +3,25 @@ package de.codecrunch.view;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 import de.codecrunch.ScreenId;
 import de.codecrunch.ScreenNavigator;
 import de.codecrunch.controller.C_Editor;
 import de.codecrunch.model.M_Tile;
+import de.codecrunch.render.TileVisualFactory;
 
 public class V_Editor extends VA_Screen {
 	private C_Editor controller;
 	private final ScreenNavigator screenNavigator;
-
-	private InputListener tileListener = new InputListener() {
-		@Override
-		public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-			if (event.getListenerActor() instanceof M_Tile && pointer >= 0)
-				controller.clickedOnTile((M_Tile) event.getListenerActor());
-		}
-	};
+	private final TileVisualFactory tileVisualFactory = new TileVisualFactory();
+	private final Map<M_Tile, Image> tileImages = new IdentityHashMap<>();
 
 	public V_Editor(ScreenNavigator screenNavigator) {
 		super();
@@ -41,8 +40,16 @@ public class V_Editor extends VA_Screen {
 		for (int y = 0; y < controller.getMap().y_count; y++) {
 			for (int x = 0; x < controller.getMap().x_count; x++) {
 				final M_Tile m_tile = tiles[x][y];
-				mapTable.add(m_tile).center();
-				m_tile.addListener(tileListener);
+				Image tileImage = tileVisualFactory.createEditorImage(m_tile);
+				tileImages.put(m_tile, tileImage);
+				mapTable.add(tileImage).center();
+				tileImage.addListener(new InputListener() {
+					@Override
+					public void enter(InputEvent event, float x, float y, int pointer,
+							Actor fromActor) {
+						if (pointer >= 0) controller.clickedOnTile(m_tile);
+					}
+				});
 			}
 			mapTable.row();
 		}
@@ -90,11 +97,18 @@ public class V_Editor extends VA_Screen {
 	}
 
 	public void updateTile(M_Tile tile) {
-		tile.updateEditorImage();
+		Image image = tileImages.get(tile);
+		if (image != null) tileVisualFactory.updateEditorImage(image, tile);
 	}
 
 	public void updateTiles(Iterable<M_Tile> tiles) {
 		for (M_Tile tile : tiles) updateTile(tile);
+	}
+
+	@Override
+	public void dispose() {
+		super.dispose();
+		tileVisualFactory.dispose();
 	}
 
 	@Override

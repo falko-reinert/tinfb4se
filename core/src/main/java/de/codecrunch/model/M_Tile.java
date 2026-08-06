@@ -1,30 +1,22 @@
 package de.codecrunch.model;
 
-import com.badlogic.gdx.graphics.g3d.ModelInstance;
-import com.badlogic.gdx.scenes.scene2d.ui.Container;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-
 import java.io.Serializable;
 
-public class M_Tile extends Container<Image> implements Serializable {
+public class M_Tile implements Serializable {
+	private static final long serialVersionUID = 1043533140197378968L;
+
 	public final int x_pos, y_pos;
 
 	private transient ME_TileState state;
 	//for serialization
 	private int tileStateOrdinal;
 	private int tileRotation;
-	private transient ModelInstance gameModel;
-	private transient Image editorImage;
 
 	public M_Tile(ME_TileState state, int x_pos, int y_pos, int rotation) {
 		this.state = state;
 		this.x_pos = x_pos;
 		this.y_pos = y_pos;
 		this.tileRotation = rotation;
-	}
-
-	public ModelInstance getGameModel() {
-		return gameModel;
 	}
 
 	public ME_TileState getTileState() {
@@ -42,15 +34,6 @@ public class M_Tile extends Container<Image> implements Serializable {
 
 	public void setTileRotation(int tileRotation) {
 		this.tileRotation = tileRotation;
-	}
-
-	public void updateEditorImage() {
-		editorImage = state.getEditorImage(tileRotation);
-		this.setActor(editorImage);
-	}
-
-	public void updateGameModel() {
-		gameModel = state.getGameModel(tileRotation, x_pos, y_pos);
 	}
 
 	public String toString() {

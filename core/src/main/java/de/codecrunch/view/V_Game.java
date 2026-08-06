@@ -6,14 +6,19 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.Environment;
+import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 
+import de.codecrunch.Model3DFactory;
 import de.codecrunch.controller.C_Game;
-import de.codecrunch.model.M_RenderBatch;
+import de.codecrunch.model.M_Map;
+import de.codecrunch.model.tower.MA_Tower;
+import de.codecrunch.render.RenderBatch;
+import de.codecrunch.render.TileVisualFactory;
 
 public class V_Game extends VA_Screen {
 
@@ -22,14 +27,16 @@ public class V_Game extends VA_Screen {
 	private final float CAM_UPPER = 169.7f;//169.7
 	private final float MAP_MIDDLE = 40f;//40
 	private final float MAP_BRIGHTNESS = 1f;
+	private final float TILE_DISTANCE = 10f;
 
 	private C_Game controller;
 
 	private PerspectiveCamera camera;
 	private SpriteBatch hudBatch = new SpriteBatch();
 	V_HUD v_hud = new V_HUD(hudBatch);
-	private M_RenderBatch mapBatch = new M_RenderBatch();
-	private M_RenderBatch towerBatch = new M_RenderBatch();
+	private RenderBatch mapBatch = new RenderBatch();
+	private RenderBatch towerBatch = new RenderBatch();
+	private TileVisualFactory tileVisualFactory = new TileVisualFactory();
 	private Environment environment = new Environment();
 	private PointLight mouseLight = new PointLight().set(1f, 1f, 1f, 30f, 1f, 40f, 100f);
 
@@ -62,12 +69,16 @@ public class V_Game extends VA_Screen {
 		controller = game;
 	}
 
-	public M_RenderBatch getMapBatch() {
-		return mapBatch;
+	public void loadMap(M_Map map) {
+		map.foreachTile(tile -> mapBatch.addElement(tileVisualFactory.createGameModel(tile)));
 	}
-	
-	public M_RenderBatch getTowerBatch() {
-		return towerBatch;
+
+	public void addTower(MA_Tower tower) {
+		ModelInstance model = Model3DFactory.instantiate(
+				Model3DFactory.loadModel("towers/stub.g3db"));
+		model.transform.setTranslation(tower.getX() * TILE_DISTANCE, 0.5f,
+				tower.getY() * TILE_DISTANCE);
+		towerBatch.addElement(model);
 	}
 
 	@Override
@@ -75,6 +86,7 @@ public class V_Game extends VA_Screen {
 		super.dispose();
 		mapBatch.dispose();
 		towerBatch.dispose();
+		tileVisualFactory.dispose();
 		v_hud.dispose();
 		hudBatch.dispose();
 	}

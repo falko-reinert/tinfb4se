@@ -27,7 +27,6 @@ public class C_Editor {
 
 	public void setView(V_Editor view) {
 		this.view = view;
-		rules.getMap().foreachTile(view::updateTile);
 	}
 
 	public M_Map getMap() {
