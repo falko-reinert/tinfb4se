@@ -3,51 +3,35 @@ package de.codecrunch.controller;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 
-import java.util.ArrayList;
-import java.util.function.Consumer;
-
 import de.codecrunch.ScreenId;
 import de.codecrunch.ScreenNavigator;
-import de.codecrunch.model.ME_TileState;
+import de.codecrunch.editor.EditorRules;
 import de.codecrunch.model.M_Map;
-import de.codecrunch.model.M_Path;
 import de.codecrunch.model.M_Tile;
 import de.codecrunch.persistence.MapRepository;
 import de.codecrunch.view.V_Editor;
 
 public class C_Editor {
 
-	private M_Map map;
 	private V_Editor view;
-	private M_Path<M_Tile> path = new M_Path<>();
 	private boolean additive = true;
 	private ScreenNavigator screenNavigator;
 	private final MapRepository mapRepository;
+	private final EditorRules rules;
 
 	public C_Editor(ScreenNavigator screenNavigator, M_Map m, MapRepository mapRepository) {
-		if (m != null) {
-			map = m;
-			path.addFromList(map.getPath());
-		} else {
-			map = new M_Map();
-		}
-
 		this.screenNavigator = screenNavigator;
 		this.mapRepository = mapRepository;
-		map.foreachTile(new Consumer<M_Tile>() {
-			@Override
-			public void accept(M_Tile m_tile) {
-				m_tile.updateEditorImage();
-			}
-		});
+		rules = new EditorRules(m);
 	}
 
 	public void setView(V_Editor view) {
 		this.view = view;
+		rules.getMap().foreachTile(view::updateTile);
 	}
 
 	public M_Map getMap() {
-		return map;
+		return rules.getMap();
 	}
 
 	public void setAdditive(boolean add) {
@@ -62,110 +46,19 @@ public class C_Editor {
 	}
 
 	public void addToPath(M_Tile tile) {
-		if (tile.getTileState() != ME_TileState.EMPTY)
-			return;
-		if (path.isEmpty()) {
-			path.addFront(tile);
-			tile.setTileState(ME_TileState.START);
-			tile.updateEditorImage();
-			return;
-		}
-		M_Tile head = path.head().get();
-		M_Tile tail = path.tail().get();
-		if (neighbour(head, tile)) {
-			path.addFront(tile);
-			tile.setTileState(ME_TileState.END);
-			tile.updateEditorImage();
-			update(path.head());
-			update(path.head().prev());
-			return;
-		}
-		if (neighbour(tail, tile)) {
-			path.addBack(tile);
-			tile.setTileState(ME_TileState.START);
-			tile.updateEditorImage();
-			update(path.tail());
-			update(path.tail().next());
-		}
+		updateView(rules.addToPath(tile));
 	}
 
 	public void removeFromPath(M_Tile tile) {
-		if (tile.getTileState() == ME_TileState.EMPTY)
-			return;
-		if (tile == path.head().get()) {
-			path.head().get().setTileState(ME_TileState.EMPTY).updateEditorImage();
-			M_Path<M_Tile>.Node newHead = path.head().prev();
-			path.removeFront();
-			if (newHead != null)
-				newHead.get().setTileState(ME_TileState.END).updateEditorImage();
-			if (newHead == path.tail())
-				newHead.get().setTileState(ME_TileState.START).updateEditorImage();
-		} else if (tile == path.tail().get()) {
-			path.tail().get().setTileState(ME_TileState.EMPTY).updateEditorImage();
-			M_Path<M_Tile>.Node newTail = path.tail().next();
-			path.removeBack();
-			if (newTail != null)
-				newTail.get().setTileState(ME_TileState.START).updateEditorImage();
-		}
+		updateView(rules.removeFromPath(tile));
 	}
 
-	private boolean neighbour(M_Tile t1, M_Tile t2) {
-		return Math.abs(t1.x_pos - t2.x_pos) <= 1 && t1.y_pos == t2.y_pos || Math.abs(t1.y_pos - t2.y_pos) <= 1 && t1.x_pos == t2.x_pos;
-	}
-
-	private void update(M_Path<M_Tile>.Node node) {
-		M_Tile neighbour;
-		if (!node.hasPrev() && !node.hasNext())
-			return;
-		if (node.hasPrev())
-			neighbour = node.prev().get();
-		else
-			neighbour = node.next().get();
-
-		int rotation = (90 * (2 - (neighbour.y_pos - node.get().y_pos)) - (neighbour.x_pos < node.get().x_pos ? 180 : 0) + (!node.hasPrev() ? 180 : 0)) % 360;
-		node.get().setTileRotation(rotation);
-
-		if (node.hasPrev() && node.hasNext()) {
-			if (node.prev().get().x_pos == node.next().get().x_pos || node.prev().get().y_pos == node.next().get().y_pos) {
-				node.get().setTileState(ME_TileState.PATH_STRAIGHT).updateEditorImage();
-				return;
-			}
-			//might get refactored later
-			if (node.prev().get().x_pos == node.get().x_pos) {
-				if (node.prev().get().y_pos < node.get().y_pos) {
-					if (node.next().get().x_pos < node.get().x_pos) {
-						node.get().setTileState(ME_TileState.PATH_RIGHT);
-					} else {
-						node.get().setTileState(ME_TileState.PATH_LEFT);
-					}
-				} else {
-					if (node.next().get().x_pos > node.get().x_pos) {
-						node.get().setTileState(ME_TileState.PATH_RIGHT);
-					} else {
-						node.get().setTileState(ME_TileState.PATH_LEFT);
-					}
-				}
-			} else {
-				if (node.prev().get().x_pos < node.get().x_pos) {
-					if (node.next().get().y_pos > node.get().y_pos) {
-						node.get().setTileState(ME_TileState.PATH_RIGHT);
-					} else {
-						node.get().setTileState(ME_TileState.PATH_LEFT);
-					}
-				} else {
-					if ((node.next().get().y_pos < node.get().y_pos)) {
-						node.get().setTileState(ME_TileState.PATH_RIGHT);
-					} else {
-						node.get().setTileState(ME_TileState.PATH_LEFT);
-					}
-				}
-			}
-		}
-		node.get().updateEditorImage();
+	private void updateView(Iterable<M_Tile> tiles) {
+		if (view != null) view.updateTiles(tiles);
 	}
 
 	public void save() {
-		TextField input = new TextField(map.getMapName(), view.uiSkin);
+		TextField input = new TextField(rules.getMap().getMapName(), view.uiSkin);
 		input.setMaxLength(9);
 		Dialog dialog = new Dialog("Save Level", view.uiSkin) {
 			@Override
@@ -184,12 +77,8 @@ public class C_Editor {
 	}
 
 	public void saveLevel(String levelName) {
-		if (levelName.length() < 1)
-			return;
-		map.setMapName(levelName);
-		map.setPath(path.addToList(new ArrayList<>()));
-		map.deflate();
-		mapRepository.save(map);
+		if (!rules.prepareMapForSave(levelName)) return;
+		mapRepository.save(rules.getMap());
 		screenNavigator.navigateTo(ScreenId.EDITOR_LEVEL_SELECT);
 	}
 }

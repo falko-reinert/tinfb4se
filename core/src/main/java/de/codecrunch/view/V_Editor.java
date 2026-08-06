@@ -89,6 +89,14 @@ public class V_Editor extends VA_Screen {
 		this.controller = controller;
 	}
 
+	public void updateTile(M_Tile tile) {
+		tile.updateEditorImage();
+	}
+
+	public void updateTiles(Iterable<M_Tile> tiles) {
+		for (M_Tile tile : tiles) updateTile(tile);
+	}
+
 	@Override
 	public void show() {
 
