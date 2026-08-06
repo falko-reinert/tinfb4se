@@ -8,12 +8,14 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import de.codecrunch.gameplay.GameEconomy;
 import de.codecrunch.model.ME_TileState.ME_TileStateGroup;
 import de.codecrunch.model.M_Map;
 import de.codecrunch.model.tower.MA_Tower;
 
 public class C_Computer {
 	private C_Game game;
+	private final GameEconomy economy;
 	private final int maxRange = 3;
 
 	private enum CE_ComputerState {
@@ -32,10 +34,9 @@ public class C_Computer {
 	private List<MA_Tower> towerList = MA_Tower.getAllTowers();
 
 	private int until;
-	private int money = 0;
-
-	public C_Computer(C_Game game) {
+	public C_Computer(C_Game game, GameEconomy economy) {
 		this.game = game;
+		this.economy = economy;
 
 		towerList.sort(new Comparator<MA_Tower>() {
 			@Override
@@ -58,7 +59,7 @@ public class C_Computer {
 			}
 			break;
 		case saving:
-			if (money >= towerList.get(until).getPrice()) {
+			if (economy.canAfford(towerList.get(until).getPrice())) {
 				buyTower(towerList.get(until));
 				computerState = CE_ComputerState.idle;
 			}
@@ -68,17 +69,10 @@ public class C_Computer {
 
 	private int getAffordable() {
 		int i;
-		for (i = 0; i < towerList.size() && money > towerList.get(i).getPrice(); i++) {
+		for (i = 0; i < towerList.size()
+				&& economy.getBalance() > towerList.get(i).getPrice(); i++) {
 		}
 		return i;
-	}
-
-	public void addMoney(int amount) {
-		money += amount;
-	}
-
-	public void drawMoney(int amount) {
-		money -= amount;
 	}
 
 	public void init(M_Map map) {

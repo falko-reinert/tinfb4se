@@ -8,9 +8,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.utils.Timer.Task;
 
 import de.codecrunch.controller.C_Game;
+import de.codecrunch.gameplay.GameClock;
 import de.codecrunch.view.VA_LevelSelect;
 import de.codecrunch.view.VA_Screen;
 import de.codecrunch.view.V_Editor;
@@ -72,7 +72,7 @@ public class TowerAttackGameTest {
         assertTrue(void.class.equals(TowerAttackGame.class.getDeclaredMethod("dispose").getReturnType()));
         assertTrue(void.class.equals(C_Game.class.getDeclaredMethod("dispose").getReturnType()));
         assertTrue(void.class.equals(Model3DFactory.class.getDeclaredMethod("dispose").getReturnType()));
-        Field taskField = C_Game.class.getDeclaredField("computerTask");
-        assertTrue(Task.class.equals(taskField.getType()));
+        Field clockField = C_Game.class.getDeclaredField("clock");
+        assertTrue(GameClock.class.equals(clockField.getType()));
     }
 }
