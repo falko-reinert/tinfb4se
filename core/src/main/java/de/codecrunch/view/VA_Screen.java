@@ -13,17 +13,12 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import java.awt.event.ActionEvent;
 
-import de.codecrunch.TowerAttackGame;
-
-
 public abstract class VA_Screen implements Screen {
 
-    TowerAttackGame towerAttackGame;
     Stage stage;
     final public static Skin uiSkin = new Skin(Gdx.files.internal("skins/quantum-horizon/quantum-horizon-ui.json"));
 
-    public VA_Screen(TowerAttackGame game) {
-        towerAttackGame = game;
+    public VA_Screen() {
         stage = new Stage(new FitViewport(640, 360));
         Gdx.input.setInputProcessor(stage);
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));

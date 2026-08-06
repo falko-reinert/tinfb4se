@@ -6,15 +6,16 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
-import de.codecrunch.TowerAttackGame;
+import de.codecrunch.ScreenId;
+import de.codecrunch.ScreenNavigator;
 
 public class V_Menu extends VA_Screen {
-    private TowerAttackGame game;
+    private final ScreenNavigator screenNavigator;
     public TextButton settings;
 
-    public V_Menu(TowerAttackGame game) {
-        super(game);
-        this.game = game;
+    public V_Menu(ScreenNavigator screenNavigator) {
+        super();
+        this.screenNavigator = screenNavigator;
         Table table = new Table();
         stage.addActor(table);
         table.setFillParent(true);
@@ -34,7 +35,7 @@ public class V_Menu extends VA_Screen {
         editor.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                game.changeScreen(TowerAttackGame.SCREENID_EDITORLVLSELECT);
+                screenNavigator.navigateTo(ScreenId.EDITOR_LEVEL_SELECT);
             }
         });
 
@@ -48,14 +49,14 @@ public class V_Menu extends VA_Screen {
         settings.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                game.changeScreen(TowerAttackGame.SCREENID_SETTINGS);
+                screenNavigator.navigateTo(ScreenId.SETTINGS);
             }
         });
 
         newGame.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                game.changeScreen(TowerAttackGame.SCREENID_GAMELVLSELECT);
+                screenNavigator.navigateTo(ScreenId.GAME_LEVEL_SELECT);
             }
         });
     }

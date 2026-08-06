@@ -1,6 +1,7 @@
 package de.codecrunch.view;
 
-import de.codecrunch.TowerAttackGame;
+import de.codecrunch.ScreenId;
+import de.codecrunch.ScreenNavigator;
 import de.codecrunch.controller.C_Settings;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -17,13 +18,15 @@ public class V_Settings extends VA_Screen {
 
     public TextButton save;
 
+    private final ScreenNavigator screenNavigator;
     private C_Settings settings = new C_Settings();
     private Label volumeMusicLabel;
     private Label volumeSoundLabel;
     private Label pushCheckboxLabel;
 
-    public V_Settings(TowerAttackGame game) {
-        super(game);
+    public V_Settings(ScreenNavigator screenNavigator) {
+        super();
+        this.screenNavigator = screenNavigator;
         Table table = new Table();
         table.setFillParent(true);
         stage.addActor(table);
@@ -80,7 +83,7 @@ public class V_Settings extends VA_Screen {
         save.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                towerAttackGame.changeScreen(TowerAttackGame.SCREENID_MENU);
+                screenNavigator.navigateTo(ScreenId.MENU);
             }
         });
     }

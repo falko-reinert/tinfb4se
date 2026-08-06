@@ -14,7 +14,7 @@ import de.codecrunch.view.V_GameLevelSelect;
 import de.codecrunch.view.V_Menu;
 import de.codecrunch.view.V_Settings;
 
-public class TowerAttackGame extends Game {
+public class TowerAttackGame extends Game implements ScreenNavigator {
 
     private C_Game game;
     private C_Editor editor;
@@ -28,57 +28,46 @@ public class TowerAttackGame extends Game {
     private V_EditorLevelSelect editorLevelSelectScreen;
 
 
-    public final static int SCREENID_GAME = 0;
-    public final static int SCREENID_GAMELVLSELECT = 1;
-    public final static int SCREENID_MENU = 2;
-    public final static int SCREENID_SETTINGS = 3;
-    public final static int SCREENID_EDITORLVLSELECT = 4;
-    public final static int SCREENID_EDITOR = 5;
-
-
     @Override
     public void create() {
-        changeScreen(SCREENID_MENU);
+        navigateTo(ScreenId.MENU);
     }
 
-    /**
-     * DON'T CHANGE SCREENS OVER ANY OTHER METHOD
-     *
-     * @param screenid ID of the screen you're switching to. see this classes final integers
-     */
-    public void changeScreen(int screenid) {
-         modifyScreen(screenid, true);
+    @Override
+    public void navigateTo(ScreenId screenId) {
+         modifyScreen(screenId, true);
     }
 
-    private void setupScreen(int screenid) {
-        modifyScreen(screenid, false);
+    private void setupScreen(ScreenId screenId) {
+        modifyScreen(screenId, false);
     }
 
-    private void modifyScreen(int screenid, boolean changeTo) {
-        switch (screenid) {
-            case SCREENID_GAME:
-                if (gameScreen == null) gameScreen = new V_Game(this);
+    private void modifyScreen(ScreenId screenId, boolean changeTo) {
+        switch (screenId) {
+            case GAME:
+                if (gameScreen == null) gameScreen = new V_Game();
                 currentScreen = gameScreen;
                 break;
-            case SCREENID_GAMELVLSELECT:
-                if (levelSelectScreen == null) levelSelectScreen = new V_GameLevelSelect(this);
+            case GAME_LEVEL_SELECT:
+                if (levelSelectScreen == null)
+                    levelSelectScreen = new V_GameLevelSelect(this, this::startGame);
                 currentScreen = levelSelectScreen;
                 break;
-            case SCREENID_MENU:
+            case MENU:
                 if (menuScreen == null) menuScreen = new V_Menu(this);
                 currentScreen = menuScreen;
                 break;
-            case SCREENID_SETTINGS:
+            case SETTINGS:
                 if (settingsScreen == null) settingsScreen = new V_Settings(this);
                 currentScreen = settingsScreen;
                 break;
-            case SCREENID_EDITOR:
+            case EDITOR:
                 if (editorScreen == null) editorScreen = new V_Editor(this);
                 currentScreen = editorScreen;
                 break;
-            case SCREENID_EDITORLVLSELECT:
+            case EDITOR_LEVEL_SELECT:
                 if (editorLevelSelectScreen == null)
-                    editorLevelSelectScreen = new V_EditorLevelSelect(this);
+                    editorLevelSelectScreen = new V_EditorLevelSelect(this, this::startEditor);
                 currentScreen = editorLevelSelectScreen;
                 break;
         }
@@ -90,25 +79,24 @@ public class TowerAttackGame extends Game {
 
     public void startEditor(M_Map map) {
         editor = new C_Editor(this, map);
-        setupScreen(SCREENID_EDITOR);
+        setupScreen(ScreenId.EDITOR);
         editor.setView(editorScreen);
         editorScreen.setController(editor);
         editorScreen.loadUI();
-        changeScreen(SCREENID_EDITOR);
+        navigateTo(ScreenId.EDITOR);
     }
 
     public void startGame(M_Map map) {
         //Loads 3d Models -> May be put in loading screen later.
         Model3DFactory.setup();
 
-        game = new C_Game(this, map);
-        setupScreen(SCREENID_GAME);
+        game = new C_Game(map);
+        setupScreen(ScreenId.GAME);
         game.setView(gameScreen);
         gameScreen.setController(game);
         game.start();
-        changeScreen(SCREENID_GAME);
+        navigateTo(ScreenId.GAME);
         Gdx.input.setInputProcessor(gameScreen.new GameInputProcessor());
     }
 
 }
-

@@ -5,14 +5,21 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
-import de.codecrunch.TowerAttackGame;
+import java.util.function.Consumer;
+
+import de.codecrunch.ScreenId;
+import de.codecrunch.ScreenNavigator;
 import de.codecrunch.model.M_Map;
 
 public class V_EditorLevelSelect extends VA_LevelSelect {
 
+    private final ScreenNavigator screenNavigator;
+    private final Consumer<M_Map> editorStarter;
 
-    public V_EditorLevelSelect(TowerAttackGame game) {
-        super(game);
+    public V_EditorLevelSelect(ScreenNavigator screenNavigator, Consumer<M_Map> editorStarter) {
+        super();
+        this.screenNavigator = screenNavigator;
+        this.editorStarter = editorStarter;
         Table table = new Table();
         table.setFillParent(true);
         stage.addActor(table);
@@ -27,20 +34,20 @@ public class V_EditorLevelSelect extends VA_LevelSelect {
         newLevel.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                towerAttackGame.startEditor(null);
+                editorStarter.accept(null);
             }
         });
 
         back.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                towerAttackGame.changeScreen(TowerAttackGame.SCREENID_MENU);
+                screenNavigator.navigateTo(ScreenId.MENU);
             }
         });
     }
 
     @Override
     public void startMap(M_Map map) {
-        towerAttackGame.startEditor(map);
+        editorStarter.accept(map);
     }
 }

@@ -9,7 +9,6 @@ import java.awt.BorderLayout;
 
 import javax.swing.plaf.basic.BasicArrowButton;
 
-import de.codecrunch.TowerAttackGame;
 import de.codecrunch.controller.C_LevelSelect;
 import de.codecrunch.model.M_Map;
 
@@ -17,8 +16,8 @@ public abstract class VA_LevelSelect extends VA_Screen {
 
     C_LevelSelect controller = new C_LevelSelect();
 
-    public VA_LevelSelect(TowerAttackGame game) {
-        super(game);
+    public VA_LevelSelect() {
+        super();
         controller.setup(this);
     }
 

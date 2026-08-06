@@ -7,12 +7,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
-import de.codecrunch.TowerAttackGame;
+import de.codecrunch.ScreenId;
+import de.codecrunch.ScreenNavigator;
 import de.codecrunch.controller.C_Editor;
 import de.codecrunch.model.M_Tile;
 
 public class V_Editor extends VA_Screen {
 	private C_Editor controller;
+	private final ScreenNavigator screenNavigator;
 
 	private InputListener tileListener = new InputListener() {
 		@Override
@@ -22,8 +24,9 @@ public class V_Editor extends VA_Screen {
 		}
 	};
 
-	public V_Editor(TowerAttackGame game) {
-		super(game);
+	public V_Editor(ScreenNavigator screenNavigator) {
+		super();
+		this.screenNavigator = screenNavigator;
 	}
 
 	public V_Editor loadUI() {
@@ -70,7 +73,7 @@ public class V_Editor extends VA_Screen {
 		exit.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-				towerAttackGame.changeScreen(TowerAttackGame.SCREENID_EDITORLVLSELECT);
+				screenNavigator.navigateTo(ScreenId.EDITOR_LEVEL_SELECT);
 			}
 		});
 		save.addListener(new ClickListener() {

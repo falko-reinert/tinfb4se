@@ -13,7 +13,8 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
-import de.codecrunch.TowerAttackGame;
+import de.codecrunch.ScreenId;
+import de.codecrunch.ScreenNavigator;
 import de.codecrunch.model.ME_TileState;
 import de.codecrunch.model.M_Map;
 import de.codecrunch.model.M_Path;
@@ -28,9 +29,9 @@ public class C_Editor {
 	private V_Editor view;
 	private M_Path<M_Tile> path = new M_Path<>();
 	private boolean additive = true;
-	private TowerAttackGame towerAttackGame;
+	private ScreenNavigator screenNavigator;
 
-	public C_Editor(TowerAttackGame game, M_Map m) {
+	public C_Editor(ScreenNavigator screenNavigator, M_Map m) {
 		if (m != null) {
 			map = m;
 			path.addFromList(map.getPath());
@@ -38,7 +39,7 @@ public class C_Editor {
 			map = new M_Map();
 		}
 
-		towerAttackGame = game;
+		this.screenNavigator = screenNavigator;
 		map.foreachTile(new Consumer<M_Tile>() {
 			@Override
 			public void accept(M_Tile m_tile) {
@@ -204,6 +205,6 @@ public class C_Editor {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		towerAttackGame.changeScreen(TowerAttackGame.SCREENID_EDITORLVLSELECT);
+		screenNavigator.navigateTo(ScreenId.EDITOR_LEVEL_SELECT);
 	}
 }

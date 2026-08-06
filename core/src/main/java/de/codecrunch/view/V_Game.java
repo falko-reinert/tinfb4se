@@ -12,7 +12,6 @@ import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 
-import de.codecrunch.TowerAttackGame;
 import de.codecrunch.controller.C_Game;
 import de.codecrunch.model.M_RenderBatch;
 
@@ -36,8 +35,8 @@ public class V_Game extends VA_Screen {
 
 	private float cameraMotion = 0f;
 
-	public V_Game(TowerAttackGame game) {
-		super(game);
+	public V_Game() {
+		super();
 
 	}
 

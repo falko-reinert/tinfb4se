@@ -5,13 +5,21 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
-import de.codecrunch.TowerAttackGame;
+import java.util.function.Consumer;
+
+import de.codecrunch.ScreenId;
+import de.codecrunch.ScreenNavigator;
 import de.codecrunch.model.M_Map;
 
 public class V_GameLevelSelect extends VA_LevelSelect {
 
-    public V_GameLevelSelect(TowerAttackGame game) {
-        super(game);
+    private final ScreenNavigator screenNavigator;
+    private final Consumer<M_Map> gameStarter;
+
+    public V_GameLevelSelect(ScreenNavigator screenNavigator, Consumer<M_Map> gameStarter) {
+        super();
+        this.screenNavigator = screenNavigator;
+        this.gameStarter = gameStarter;
         Table table = new Table();
         table.setFillParent(true);
         stage.addActor(table);
@@ -24,13 +32,13 @@ public class V_GameLevelSelect extends VA_LevelSelect {
         back.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                towerAttackGame.changeScreen(TowerAttackGame.SCREENID_MENU);
+                screenNavigator.navigateTo(ScreenId.MENU);
             }
         });
     }
 
     @Override
     public void startMap(M_Map map) {
-        towerAttackGame.startGame(map);
+        gameStarter.accept(map);
     }
 }

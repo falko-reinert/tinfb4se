@@ -69,21 +69,21 @@ class CoreSteps extends GreenCoffeeSteps {
                     if (!(current instanceof V_Settings))
                         throw new Exception("App not in screen " + screenName);
                 } else if (action.equals("get"))
-                    game.changeScreen(TowerAttackGame.SCREENID_SETTINGS);
+                    game.navigateTo(ScreenId.SETTINGS);
                 break;
             case "menu":
                 if (action.equals("am") || action.equals("stay")) {
                     if (!(current instanceof V_Menu))
                         throw new Exception("App not in screen " + screenName);
                 } else if (action.equals("get"))
-                    game.changeScreen(TowerAttackGame.SCREENID_MENU);
+                    game.navigateTo(ScreenId.MENU);
                 break;
             case "selectLevel":
                 if (action.equals("am") || action.equals("stay")) {
                     if (!(current instanceof V_Settings))
                         throw new Exception("App not in screen " + screenName);
                 } else if (action.equals("get"))
-                    game.changeScreen(TowerAttackGame.SCREENID_EDITORLVLSELECT);
+                    game.navigateTo(ScreenId.EDITOR_LEVEL_SELECT);
                 break;
             default:
                 throw new Exception("Screen " + screenName + " is not a valid screen.");
