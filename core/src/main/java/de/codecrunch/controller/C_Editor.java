@@ -1,15 +1,8 @@
 package de.codecrunch.controller;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
@@ -18,9 +11,8 @@ import de.codecrunch.ScreenNavigator;
 import de.codecrunch.model.ME_TileState;
 import de.codecrunch.model.M_Map;
 import de.codecrunch.model.M_Path;
-import de.codecrunch.model.M_Path.Node;
 import de.codecrunch.model.M_Tile;
-import de.codecrunch.view.VA_Screen;
+import de.codecrunch.persistence.MapRepository;
 import de.codecrunch.view.V_Editor;
 
 public class C_Editor {
@@ -30,8 +22,9 @@ public class C_Editor {
 	private M_Path<M_Tile> path = new M_Path<>();
 	private boolean additive = true;
 	private ScreenNavigator screenNavigator;
+	private final MapRepository mapRepository;
 
-	public C_Editor(ScreenNavigator screenNavigator, M_Map m) {
+	public C_Editor(ScreenNavigator screenNavigator, M_Map m, MapRepository mapRepository) {
 		if (m != null) {
 			map = m;
 			path.addFromList(map.getPath());
@@ -40,6 +33,7 @@ public class C_Editor {
 		}
 
 		this.screenNavigator = screenNavigator;
+		this.mapRepository = mapRepository;
 		map.foreachTile(new Consumer<M_Tile>() {
 			@Override
 			public void accept(M_Tile m_tile) {
@@ -192,19 +186,10 @@ public class C_Editor {
 	public void saveLevel(String levelName) {
 		if (levelName.length() < 1)
 			return;
-		File file = Gdx.files.local("maps/" + levelName + ".map").file();
 		map.setMapName(levelName);
 		map.setPath(path.addToList(new ArrayList<>()));
-		try {
-			file.getParentFile().mkdirs();
-			file.createNewFile();
-			ObjectOutputStream stream = new ObjectOutputStream(new FileOutputStream(file));
-			map.deflate();
-			stream.writeObject(map);
-			stream.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		map.deflate();
+		mapRepository.save(map);
 		screenNavigator.navigateTo(ScreenId.EDITOR_LEVEL_SELECT);
 	}
 }

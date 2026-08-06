@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 
 import de.codecrunch.ScreenId;
 import de.codecrunch.ScreenNavigator;
+import de.codecrunch.controller.C_LevelSelect;
 import de.codecrunch.model.M_Map;
 
 public class V_EditorLevelSelect extends VA_LevelSelect {
@@ -16,8 +17,9 @@ public class V_EditorLevelSelect extends VA_LevelSelect {
     private final ScreenNavigator screenNavigator;
     private final Consumer<M_Map> editorStarter;
 
-    public V_EditorLevelSelect(ScreenNavigator screenNavigator, Consumer<M_Map> editorStarter) {
-        super();
+    public V_EditorLevelSelect(ScreenNavigator screenNavigator, Consumer<M_Map> editorStarter,
+                               C_LevelSelect controller) {
+        super(controller);
         this.screenNavigator = screenNavigator;
         this.editorStarter = editorStarter;
         Table table = new Table();

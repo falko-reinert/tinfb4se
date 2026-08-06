@@ -1,47 +1,39 @@
 package de.codecrunch.controller;
 
-
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Preferences;
-
+import de.codecrunch.persistence.SettingsStore;
 
 public class C_Settings {
     private static final String PREF_MUSIC_VOLUME = "volume";
     private static final String PREF_PUSH_ENABLED = "push.enabled";
     private static final String PREF_SOUND_VOL = "sound";
-    private static final String PREFS_NAME = "code_crunch.tower_attack";
 
+    private final SettingsStore store;
 
-    protected Preferences getPrefs() {
-        return Gdx.app.getPreferences(PREFS_NAME);
+    public C_Settings(SettingsStore store) {
+        this.store = store;
     }
 
     public boolean isPushEnabled() {
-        return getPrefs().getBoolean(PREF_PUSH_ENABLED, true);
+        return store.getBoolean(PREF_PUSH_ENABLED, true);
     }
 
     public void setPushEnabled(boolean pushEnabled) {
-
-        getPrefs().putBoolean(PREF_PUSH_ENABLED, pushEnabled);
-        getPrefs().flush();
+        store.putBoolean(PREF_PUSH_ENABLED, pushEnabled);
     }
 
     public float getMusicVolume() {
-
-        return getPrefs().getFloat(PREF_MUSIC_VOLUME, 0.5f);
+        return store.getFloat(PREF_MUSIC_VOLUME, 0.5f);
     }
 
     public void setMusicVolume(float volume) {
-        getPrefs().putFloat(PREF_MUSIC_VOLUME, volume);
-        getPrefs().flush();
+        store.putFloat(PREF_MUSIC_VOLUME, volume);
     }
 
     public float getSoundVolume() {
-        return getPrefs().getFloat(PREF_SOUND_VOL, 0.5f);
+        return store.getFloat(PREF_SOUND_VOL, 0.5f);
     }
 
     public void setSoundVolume(float volume) {
-        getPrefs().putFloat(PREF_SOUND_VOL, volume);
-        getPrefs().flush();
+        store.putFloat(PREF_SOUND_VOL, volume);
     }
 }

@@ -8,14 +8,19 @@ import java.util.List;
 
 import de.codecrunch.model.M_LevelSelect;
 import de.codecrunch.model.M_Map;
+import de.codecrunch.persistence.MapRepository;
 import de.codecrunch.view.VA_LevelSelect;
 
 public class C_LevelSelect {
-    private M_LevelSelect model = new M_LevelSelect();
+    private final M_LevelSelect model;
     private VA_LevelSelect view;
     public static final int UP = -1;
     public static final int DOWN = 1;
     private List<TextButton> buttons;
+
+    public C_LevelSelect(MapRepository mapRepository) {
+        model = new M_LevelSelect(mapRepository);
+    }
 
     public void setup(VA_LevelSelect view) {
         this.view = view;

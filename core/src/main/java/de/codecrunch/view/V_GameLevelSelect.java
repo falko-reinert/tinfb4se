@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 
 import de.codecrunch.ScreenId;
 import de.codecrunch.ScreenNavigator;
+import de.codecrunch.controller.C_LevelSelect;
 import de.codecrunch.model.M_Map;
 
 public class V_GameLevelSelect extends VA_LevelSelect {
@@ -16,8 +17,9 @@ public class V_GameLevelSelect extends VA_LevelSelect {
     private final ScreenNavigator screenNavigator;
     private final Consumer<M_Map> gameStarter;
 
-    public V_GameLevelSelect(ScreenNavigator screenNavigator, Consumer<M_Map> gameStarter) {
-        super();
+    public V_GameLevelSelect(ScreenNavigator screenNavigator, Consumer<M_Map> gameStarter,
+                             C_LevelSelect controller) {
+        super(controller);
         this.screenNavigator = screenNavigator;
         this.gameStarter = gameStarter;
         Table table = new Table();

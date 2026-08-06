@@ -19,14 +19,15 @@ public class V_Settings extends VA_Screen {
     public TextButton save;
 
     private final ScreenNavigator screenNavigator;
-    private C_Settings settings = new C_Settings();
+    private final C_Settings settings;
     private Label volumeMusicLabel;
     private Label volumeSoundLabel;
     private Label pushCheckboxLabel;
 
-    public V_Settings(ScreenNavigator screenNavigator) {
+    public V_Settings(ScreenNavigator screenNavigator, C_Settings settings) {
         super();
         this.screenNavigator = screenNavigator;
+        this.settings = settings;
         Table table = new Table();
         table.setFillParent(true);
         stage.addActor(table);

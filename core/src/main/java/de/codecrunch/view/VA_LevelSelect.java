@@ -14,10 +14,11 @@ import de.codecrunch.model.M_Map;
 
 public abstract class VA_LevelSelect extends VA_Screen {
 
-    C_LevelSelect controller = new C_LevelSelect();
+    C_LevelSelect controller;
 
-    public VA_LevelSelect() {
+    public VA_LevelSelect(C_LevelSelect controller) {
         super();
+        this.controller = controller;
         controller.setup(this);
     }
 

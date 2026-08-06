@@ -5,7 +5,12 @@ import com.badlogic.gdx.Gdx;
 
 import de.codecrunch.controller.C_Editor;
 import de.codecrunch.controller.C_Game;
+import de.codecrunch.controller.C_LevelSelect;
+import de.codecrunch.controller.C_Settings;
 import de.codecrunch.model.M_Map;
+import de.codecrunch.persistence.GdxSettingsStore;
+import de.codecrunch.persistence.LocalMapRepository;
+import de.codecrunch.persistence.MapRepository;
 import de.codecrunch.view.VA_Screen;
 import de.codecrunch.view.V_Editor;
 import de.codecrunch.view.V_EditorLevelSelect;
@@ -18,6 +23,8 @@ public class TowerAttackGame extends Game implements ScreenNavigator {
 
     private C_Game game;
     private C_Editor editor;
+    private C_Settings settings;
+    private MapRepository mapRepository;
 
     private V_Game gameScreen;
     private V_GameLevelSelect levelSelectScreen;
@@ -29,6 +36,8 @@ public class TowerAttackGame extends Game implements ScreenNavigator {
 
     @Override
     public void create() {
+        settings = new C_Settings(new GdxSettingsStore());
+        mapRepository = new LocalMapRepository();
         navigateTo(ScreenId.MENU);
     }
 
@@ -44,20 +53,22 @@ public class TowerAttackGame extends Game implements ScreenNavigator {
                 return gameScreen;
             case GAME_LEVEL_SELECT:
                 if (levelSelectScreen == null)
-                    levelSelectScreen = new V_GameLevelSelect(this, this::startGame);
+                    levelSelectScreen = new V_GameLevelSelect(this, this::startGame,
+                            new C_LevelSelect(mapRepository));
                 return levelSelectScreen;
             case MENU:
                 if (menuScreen == null) menuScreen = new V_Menu(this);
                 return menuScreen;
             case SETTINGS:
-                if (settingsScreen == null) settingsScreen = new V_Settings(this);
+                if (settingsScreen == null) settingsScreen = new V_Settings(this, settings);
                 return settingsScreen;
             case EDITOR:
                 if (editorScreen == null) editorScreen = new V_Editor(this);
                 return editorScreen;
             case EDITOR_LEVEL_SELECT:
                 if (editorLevelSelectScreen == null)
-                    editorLevelSelectScreen = new V_EditorLevelSelect(this, this::startEditor);
+                    editorLevelSelectScreen = new V_EditorLevelSelect(this, this::startEditor,
+                            new C_LevelSelect(mapRepository));
                 return editorLevelSelectScreen;
             default:
                 throw new IllegalArgumentException("Unsupported screen: " + screenId);
@@ -71,7 +82,7 @@ public class TowerAttackGame extends Game implements ScreenNavigator {
 
     public void startEditor(M_Map map) {
         V_Editor nextScreen = new V_Editor(this);
-        C_Editor nextEditor = new C_Editor(this, map);
+        C_Editor nextEditor = new C_Editor(this, map, mapRepository);
         nextEditor.setView(nextScreen);
         nextScreen.setController(nextEditor);
         nextScreen.loadUI();
