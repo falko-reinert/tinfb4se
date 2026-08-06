@@ -2,10 +2,12 @@ package de.codecrunch.view;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.Environment;
+import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
@@ -15,6 +17,7 @@ import com.badlogic.gdx.math.collision.Ray;
 
 import de.codecrunch.Model3DFactory;
 import de.codecrunch.controller.C_Game;
+import de.codecrunch.gameplay.PathEnemy;
 import de.codecrunch.model.M_Map;
 import de.codecrunch.model.tower.MA_Tower;
 import de.codecrunch.render.RenderBatch;
@@ -36,12 +39,14 @@ public class V_Game extends VA_Screen {
 	V_HUD v_hud = new V_HUD(hudBatch);
 	private RenderBatch mapBatch = new RenderBatch();
 	private RenderBatch towerBatch = new RenderBatch();
+	private RenderBatch enemyBatch = new RenderBatch();
 	private TileVisualFactory tileVisualFactory = new TileVisualFactory();
 	private Environment environment = new Environment();
 	private PointLight mouseLight = new PointLight().set(1f, 1f, 1f, 30f, 1f, 40f, 100f);
 
 	private float cameraMotion = 0f;
 	private final GameInputProcessor inputProcessor = new GameInputProcessor();
+	private ModelInstance enemyModel;
 
 	public V_Game() {
 		super();
@@ -81,11 +86,29 @@ public class V_Game extends VA_Screen {
 		towerBatch.addElement(model);
 	}
 
+	public void addEnemy(PathEnemy enemy) {
+		enemyModel = Model3DFactory.instantiate(
+				Model3DFactory.loadModel("towers/stub.g3db"));
+		for (Material material : enemyModel.materials) {
+			material.set(ColorAttribute.createDiffuse(Color.RED));
+		}
+		enemyBatch.addElement(enemyModel);
+		updateEnemy(enemy);
+	}
+
+	public void updateEnemy(PathEnemy enemy) {
+		if (enemyModel == null) return;
+		enemyModel.transform.setToTranslation(
+				enemy.getX() * TILE_DISTANCE, 1f, enemy.getY() * TILE_DISTANCE);
+		enemyModel.transform.scale(0.5f, 0.5f, 0.5f);
+	}
+
 	@Override
 	public void dispose() {
 		super.dispose();
 		mapBatch.dispose();
 		towerBatch.dispose();
+		enemyBatch.dispose();
 		tileVisualFactory.dispose();
 		v_hud.dispose();
 		hudBatch.dispose();
@@ -98,6 +121,7 @@ public class V_Game extends VA_Screen {
 
 	@Override
 	public void render(float delta) {
+		if (controller != null) controller.update(delta);
 		Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		Gdx.gl.glClearColor(120, 120, 120, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
@@ -113,6 +137,9 @@ public class V_Game extends VA_Screen {
 		towerBatch.begin(camera);
 		towerBatch.renderAll(environment);
 		towerBatch.end();
+		enemyBatch.begin(camera);
+		enemyBatch.renderAll(environment);
+		enemyBatch.end();
 		hudBatch.setProjectionMatrix(v_hud.stage.getCamera().combined);
 		v_hud.stage.draw();
 
