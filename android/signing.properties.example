@@ -1,0 +1,6 @@
+# Copy this file to signing.properties and keep the copy local.
+# Paths are resolved relative to the android directory.
+storeFile=release-keystore.jks
+storePassword=replace-with-a-strong-local-password
+keyAlias=replace-with-your-local-key-alias
+keyPassword=replace-with-a-strong-local-password

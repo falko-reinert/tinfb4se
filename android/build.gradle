@@ -1,5 +1,23 @@
 apply plugin: 'com.android.application'
 
+def releaseSigningPropertiesFile = file('signing.properties')
+def releaseSigningProperties = new Properties()
+def releaseSigningConfigured = releaseSigningPropertiesFile.exists()
+
+if (releaseSigningConfigured) {
+    releaseSigningPropertiesFile.withInputStream { stream ->
+        releaseSigningProperties.load(stream)
+    }
+
+    def requiredSigningProperties = ['storeFile', 'storePassword', 'keyAlias', 'keyPassword']
+    def missingSigningProperties = requiredSigningProperties.findAll {
+        !releaseSigningProperties.getProperty(it)?.trim()
+    }
+    if (!missingSigningProperties.empty) {
+        throw new GradleException("android/signing.properties is incomplete; missing: ${missingSigningProperties.join(', ')}")
+    }
+}
+
 android {
     namespace "de.codecrunch"
 
@@ -7,12 +25,14 @@ android {
         abortOnError false
     }
 
-    signingConfigs {
-        config {
-            keyAlias 'android'
-            keyPassword System.getenv("TOWER_ATTACK_ANDROID_KEY_PASSWORD")
-            storeFile file('./keystore.jks')
-            storePassword System.getenv("TOWER_ATTACK_ANDROID_STORE_PASSWORD")
+    if (releaseSigningConfigured) {
+        signingConfigs {
+            release {
+                keyAlias releaseSigningProperties.getProperty('keyAlias')
+                keyPassword releaseSigningProperties.getProperty('keyPassword')
+                storeFile file(releaseSigningProperties.getProperty('storeFile'))
+                storePassword releaseSigningProperties.getProperty('storePassword')
+            }
         }
     }
     buildToolsVersion "28.0.3"
@@ -38,16 +58,17 @@ android {
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
-        signingConfig signingConfigs.config
         testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
     }
     buildTypes {
         release {
+            if (releaseSigningConfigured) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         debug {
-            signingConfig signingConfigs.config
             debuggable true
         }
     }

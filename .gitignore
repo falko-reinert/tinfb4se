@@ -40,6 +40,9 @@ tmp/
 *.swp
 *~.nib
 local.properties
+android/signing.properties
+android/*.jks
+android/*.keystore
 .settings/
 .loadpath
 .externalToolBuilders/
@@ -68,8 +71,3 @@ build/
 
 ## Project Files
 *.map
-
-# Keep local release credentials out of Git.
-android/signing.properties
-android/*.jks
-android/*.keystore
