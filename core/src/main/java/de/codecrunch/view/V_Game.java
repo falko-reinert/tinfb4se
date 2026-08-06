@@ -17,7 +17,7 @@ import com.badlogic.gdx.math.collision.Ray;
 
 import de.codecrunch.Model3DFactory;
 import de.codecrunch.controller.C_Game;
-import de.codecrunch.gameplay.PathEnemy;
+import de.codecrunch.gameplay.PathUnit;
 import de.codecrunch.model.M_Map;
 import de.codecrunch.model.tower.MA_Tower;
 import de.codecrunch.render.RenderBatch;
@@ -39,14 +39,14 @@ public class V_Game extends VA_Screen {
 	V_HUD v_hud = new V_HUD(hudBatch);
 	private RenderBatch mapBatch = new RenderBatch();
 	private RenderBatch towerBatch = new RenderBatch();
-	private RenderBatch enemyBatch = new RenderBatch();
+	private RenderBatch unitBatch = new RenderBatch();
 	private TileVisualFactory tileVisualFactory = new TileVisualFactory();
 	private Environment environment = new Environment();
 	private PointLight mouseLight = new PointLight().set(1f, 1f, 1f, 30f, 1f, 40f, 100f);
 
 	private float cameraMotion = 0f;
 	private final GameInputProcessor inputProcessor = new GameInputProcessor();
-	private ModelInstance enemyModel;
+	private ModelInstance unitModel;
 
 	public V_Game() {
 		super();
@@ -86,21 +86,21 @@ public class V_Game extends VA_Screen {
 		towerBatch.addElement(model);
 	}
 
-	public void addEnemy(PathEnemy enemy) {
-		enemyModel = Model3DFactory.instantiate(
+	public void addUnit(PathUnit unit) {
+		unitModel = Model3DFactory.instantiate(
 				Model3DFactory.loadModel("towers/stub.g3db"));
-		for (Material material : enemyModel.materials) {
+		for (Material material : unitModel.materials) {
 			material.set(ColorAttribute.createDiffuse(Color.RED));
 		}
-		enemyBatch.addElement(enemyModel);
-		updateEnemy(enemy);
+		unitBatch.addElement(unitModel);
+		updateUnit(unit);
 	}
 
-	public void updateEnemy(PathEnemy enemy) {
-		if (enemyModel == null) return;
-		enemyModel.transform.setToTranslation(
-				enemy.getX() * TILE_DISTANCE, 1f, enemy.getY() * TILE_DISTANCE);
-		enemyModel.transform.scale(0.5f, 0.5f, 0.5f);
+	public void updateUnit(PathUnit unit) {
+		if (unitModel == null) return;
+		unitModel.transform.setToTranslation(
+				unit.getX() * TILE_DISTANCE, 1f, unit.getY() * TILE_DISTANCE);
+		unitModel.transform.scale(0.5f, 0.5f, 0.5f);
 	}
 
 	@Override
@@ -108,7 +108,7 @@ public class V_Game extends VA_Screen {
 		super.dispose();
 		mapBatch.dispose();
 		towerBatch.dispose();
-		enemyBatch.dispose();
+		unitBatch.dispose();
 		tileVisualFactory.dispose();
 		v_hud.dispose();
 		hudBatch.dispose();
@@ -137,9 +137,9 @@ public class V_Game extends VA_Screen {
 		towerBatch.begin(camera);
 		towerBatch.renderAll(environment);
 		towerBatch.end();
-		enemyBatch.begin(camera);
-		enemyBatch.renderAll(environment);
-		enemyBatch.end();
+		unitBatch.begin(camera);
+		unitBatch.renderAll(environment);
+		unitBatch.end();
 		hudBatch.setProjectionMatrix(v_hud.stage.getCamera().combined);
 		v_hud.stage.draw();
 

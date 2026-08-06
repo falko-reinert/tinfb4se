@@ -10,8 +10,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Base64;
 
-import de.codecrunch.gameplay.EnemyRoute;
-import de.codecrunch.gameplay.PathEnemy;
+import de.codecrunch.gameplay.PathUnit;
+import de.codecrunch.gameplay.UnitRoute;
 import de.codecrunch.model.tower.MA_Tower;
 import de.codecrunch.model.tower.M_BigTower;
 import de.codecrunch.model.tower.M_MediumTower;
@@ -33,8 +33,8 @@ public class ModelRenderingBoundaryTest {
         Class<?>[] modelTypes = {
                 M_Tile.class,
                 ME_TileState.class,
-                EnemyRoute.class,
-                PathEnemy.class,
+                UnitRoute.class,
+                PathUnit.class,
                 MA_Tower.class,
                 M_SmallTower.class,
                 M_MediumTower.class,

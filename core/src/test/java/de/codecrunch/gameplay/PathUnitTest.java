@@ -15,7 +15,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class PathEnemyTest {
+public class PathUnitTest {
     private M_Map map;
 
     @Before
@@ -30,42 +30,42 @@ public class PathEnemyTest {
 
     @Test
     public void routeUsesSavedStartToEndOrder() {
-        Optional<EnemyRoute> route = EnemyRoute.fromMap(map);
+        Optional<UnitRoute> route = UnitRoute.fromMap(map);
 
         assertTrue(route.isPresent());
         assertEquals(3, route.get().size());
     }
 
     @Test
-    public void enemyInterpolatesAcrossCornersUsingUnitSpeed() {
-        PathEnemy enemy = new PathEnemy(new M_SmallUnit(), route());
+    public void unitInterpolatesAcrossCornersUsingUnitSpeed() {
+        PathUnit unit = new PathUnit(new M_SmallUnit(), route());
 
-        enemy.update(0.25f);
-        assertEquals(1.5f, enemy.getX(), 0.001f);
-        assertEquals(1f, enemy.getY(), 0.001f);
+        unit.update(0.25f);
+        assertEquals(1.5f, unit.getX(), 0.001f);
+        assertEquals(1f, unit.getY(), 0.001f);
 
-        enemy.update(0.5f);
-        assertEquals(2f, enemy.getX(), 0.001f);
-        assertEquals(1.5f, enemy.getY(), 0.001f);
-        assertFalse(enemy.isFinished());
+        unit.update(0.5f);
+        assertEquals(2f, unit.getX(), 0.001f);
+        assertEquals(1.5f, unit.getY(), 0.001f);
+        assertFalse(unit.isFinished());
     }
 
     @Test
-    public void enemyStopsAtExitAfterCompletingRoute() {
-        PathEnemy enemy = new PathEnemy(new M_SmallUnit(), route());
+    public void unitStopsAtExitAfterCompletingRoute() {
+        PathUnit unit = new PathUnit(new M_SmallUnit(), route());
 
-        enemy.update(10f);
-        enemy.update(1f);
+        unit.update(10f);
+        unit.update(1f);
 
-        assertTrue(enemy.isFinished());
-        assertEquals(2f, enemy.getX(), 0.001f);
-        assertEquals(2f, enemy.getY(), 0.001f);
+        assertTrue(unit.isFinished());
+        assertEquals(2f, unit.getX(), 0.001f);
+        assertEquals(2f, unit.getY(), 0.001f);
     }
 
     @Test
     public void movementIsDeterministicAcrossUpdatePartitions() {
-        PathEnemy singleUpdate = new PathEnemy(new M_SmallUnit(), route());
-        PathEnemy splitUpdate = new PathEnemy(new M_SmallUnit(), route());
+        PathUnit singleUpdate = new PathUnit(new M_SmallUnit(), route());
+        PathUnit splitUpdate = new PathUnit(new M_SmallUnit(), route());
 
         singleUpdate.update(0.75f);
         splitUpdate.update(0.25f);
@@ -78,14 +78,14 @@ public class PathEnemyTest {
     @Test
     public void routeRejectsMissingExitAndDisconnectedTiles() {
         map.getTile(2, 2).setTileState(ME_TileState.PATH_STRAIGHT);
-        assertFalse(EnemyRoute.fromMap(map).isPresent());
+        assertFalse(UnitRoute.fromMap(map).isPresent());
 
         map.getTile(2, 2).setTileState(ME_TileState.END);
         map.setPath(Arrays.asList(map.getTile(1, 1), map.getTile(4, 1), map.getTile(2, 2)));
-        assertFalse(EnemyRoute.fromMap(map).isPresent());
+        assertFalse(UnitRoute.fromMap(map).isPresent());
     }
 
-    private EnemyRoute route() {
-        return EnemyRoute.fromMap(map).get();
+    private UnitRoute route() {
+        return UnitRoute.fromMap(map).get();
     }
 }

@@ -25,22 +25,22 @@ public class C_GameTest {
     }
 
     @Test
-    public void validMapCreatesAndUpdatesTheSliceEnemy() {
+    public void validMapCreatesAndUpdatesTheSliceUnit() {
         M_Map map = horizontalMap();
         C_Game game = new C_Game(map, new RecordingGameClock());
 
         game.update(0.5f);
 
-        assertNotNull(game.getEnemy());
-        assertEquals(2f, game.getEnemy().getX(), 0.001f);
-        assertEquals(1f, game.getEnemy().getY(), 0.001f);
+        assertNotNull(game.getUnit());
+        assertEquals(2f, game.getUnit().getX(), 0.001f);
+        assertEquals(1f, game.getUnit().getY(), 0.001f);
     }
 
     @Test
-    public void incompleteMapDoesNotCreateAnEnemy() {
+    public void incompleteMapDoesNotCreateAUnit() {
         C_Game game = new C_Game(new M_Map(), new RecordingGameClock());
 
-        assertNull(game.getEnemy());
+        assertNull(game.getUnit());
     }
 
     private M_Map horizontalMap() {

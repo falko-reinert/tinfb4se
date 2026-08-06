@@ -1,11 +1,11 @@
 package de.codecrunch.controller;
 
-import de.codecrunch.gameplay.EnemyRoute;
 import de.codecrunch.gameplay.GameClock;
 import de.codecrunch.gameplay.GameEconomy;
 import de.codecrunch.gameplay.GameProgression;
 import de.codecrunch.gameplay.GdxGameClock;
-import de.codecrunch.gameplay.PathEnemy;
+import de.codecrunch.gameplay.PathUnit;
+import de.codecrunch.gameplay.UnitRoute;
 import de.codecrunch.model.ME_TileState;
 import de.codecrunch.model.M_Game;
 import de.codecrunch.model.M_Map;
@@ -19,7 +19,7 @@ public class C_Game {
 	private final C_Computer computer;
 	private final GameProgression progression;
 	private final GameClock clock;
-	private final PathEnemy enemy;
+	private final PathUnit unit;
 	private V_Game view;
 	private M_Map map;
 
@@ -33,8 +33,8 @@ public class C_Game {
 		economy = new GameEconomy();
 		computer = new C_Computer(this, economy);
 		progression = new GameProgression(economy, computer::tick);
-		enemy = EnemyRoute.fromMap(map)
-				.map(route -> new PathEnemy(new M_SmallUnit(), route))
+		unit = UnitRoute.fromMap(map)
+				.map(route -> new PathUnit(new M_SmallUnit(), route))
 				.orElse(null);
 	}
 
@@ -49,17 +49,17 @@ public class C_Game {
 
 		computer.init(map);
 		view.setup();
-		if (enemy != null) view.addEnemy(enemy);
+		if (unit != null) view.addUnit(unit);
 	}
 
 	public void update(float deltaSeconds) {
-		if (enemy == null) return;
-		enemy.update(deltaSeconds);
-		if (view != null) view.updateEnemy(enemy);
+		if (unit == null) return;
+		unit.update(deltaSeconds);
+		if (view != null) view.updateUnit(unit);
 	}
 
-	PathEnemy getEnemy() {
-		return enemy;
+	PathUnit getUnit() {
+		return unit;
 	}
 
 	public void dispose() {

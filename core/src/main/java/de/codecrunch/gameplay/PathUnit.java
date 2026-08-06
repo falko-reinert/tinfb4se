@@ -2,15 +2,15 @@ package de.codecrunch.gameplay;
 
 import de.codecrunch.model.unit.MA_Unit;
 
-public final class PathEnemy {
+public final class PathUnit {
     private final MA_Unit unit;
-    private final EnemyRoute route;
+    private final UnitRoute route;
     private float distance;
     private float x;
     private float y;
     private boolean finished;
 
-    public PathEnemy(MA_Unit unit, EnemyRoute route) {
+    public PathUnit(MA_Unit unit, UnitRoute route) {
         if (unit == null || route == null) {
             throw new IllegalArgumentException("Unit and route are required");
         }

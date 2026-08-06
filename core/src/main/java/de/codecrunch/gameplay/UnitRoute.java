@@ -9,14 +9,14 @@ import de.codecrunch.model.ME_TileState;
 import de.codecrunch.model.M_Map;
 import de.codecrunch.model.M_Tile;
 
-public final class EnemyRoute {
+public final class UnitRoute {
     private final List<RoutePoint> points;
 
-    private EnemyRoute(List<RoutePoint> points) {
+    private UnitRoute(List<RoutePoint> points) {
         this.points = Collections.unmodifiableList(points);
     }
 
-    public static Optional<EnemyRoute> fromMap(M_Map map) {
+    public static Optional<UnitRoute> fromMap(M_Map map) {
         if (map == null || map.getPath() == null || map.getPath().size() < 2) {
             return Optional.empty();
         }
@@ -41,7 +41,7 @@ public final class EnemyRoute {
             }
             points.add(new RoutePoint(tile.x_pos, tile.y_pos));
         }
-        return Optional.of(new EnemyRoute(points));
+        return Optional.of(new UnitRoute(points));
     }
 
     public int size() {
