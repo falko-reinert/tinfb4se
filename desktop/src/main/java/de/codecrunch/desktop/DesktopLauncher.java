@@ -1,15 +1,14 @@
 package de.codecrunch.desktop;
 
-import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
-import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import de.codecrunch.TowerAttackGame;
 
 public class DesktopLauncher {
 	public static void main (String[] arg) {
-		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
-		config.title = "Tower Attack";
-		config.height = 576;
-		config.width = 1024;
-		new LwjglApplication(new TowerAttackGame(), config);
+		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
+		config.setTitle("Tower Attack");
+		config.setWindowedMode(1024, 576);
+		new Lwjgl3Application(new TowerAttackGame(), config);
 	}
 }

@@ -193,6 +193,11 @@ public class V_Game extends VA_Screen {
 		}
 
 		@Override
+		public boolean touchCancelled(int screenX, int screenY, int pointer, int button) {
+			return false;
+		}
+
+		@Override
 		public boolean mouseMoved(int screenX, int screenY) {
 			Vector3 tmpVector = new Vector3();
 			Ray ray = camera.getPickRay(screenX, screenY);
@@ -203,8 +208,8 @@ public class V_Game extends VA_Screen {
 		}
 
 		@Override
-		public boolean scrolled(int amount) {
-			cameraMotion -= amount * 0.5f;
+		public boolean scrolled(float amountX, float amountY) {
+			cameraMotion -= amountY * 0.5f;
 			return true;
 		}
 

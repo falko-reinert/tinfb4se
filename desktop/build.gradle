@@ -7,20 +7,24 @@ project.ext.mainClassName = "de.codecrunch.desktop.DesktopLauncher"
 project.ext.assetsDir = new File("../android/assets")
 
 task run(dependsOn: classes, type: JavaExec) {
-    main = project.mainClassName
+    mainClass = project.mainClassName
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
     workingDir = project.assetsDir
-    ignoreExitValue = true
+    if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+        jvmArgs "-XstartOnFirstThread"
+    }
 }
 
 task debug(dependsOn: classes, type: JavaExec) {
-    main = project.mainClassName
+    mainClass = project.mainClassName
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
     workingDir = project.assetsDir
-    ignoreExitValue = true
     debug = true
+    if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+        jvmArgs "-XstartOnFirstThread"
+    }
 }
 
 task dist(type: Jar) {
