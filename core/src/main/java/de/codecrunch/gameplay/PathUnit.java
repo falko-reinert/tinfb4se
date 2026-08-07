@@ -21,7 +21,7 @@ public final class PathUnit {
     }
 
     public void update(float deltaSeconds) {
-        if (deltaSeconds <= 0 || finished) return;
+        if (deltaSeconds <= 0 || !isRunning()) return;
 
         float routeLength = route.size() - 1;
         distance = Math.min(routeLength, distance + unit.getSpeed() * deltaSeconds);
@@ -52,6 +52,14 @@ public final class PathUnit {
 
     public boolean isFinished() {
         return finished;
+    }
+
+    public boolean isRunning() {
+        return !finished && unit.getCurrentLife() > 0;
+    }
+
+    public float getRouteProgress() {
+        return distance;
     }
 
     private float interpolate(float start, float end, float progress) {

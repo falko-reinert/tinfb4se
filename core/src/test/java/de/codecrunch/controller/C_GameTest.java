@@ -5,6 +5,7 @@ import org.junit.Test;
 import de.codecrunch.gameplay.GameClock;
 import de.codecrunch.model.ME_TileState;
 import de.codecrunch.model.M_Map;
+import de.codecrunch.model.tower.M_SmallTower;
 
 import java.util.Arrays;
 
@@ -41,6 +42,18 @@ public class C_GameTest {
         C_Game game = new C_Game(new M_Map(), new RecordingGameClock());
 
         assertNull(game.getUnit());
+    }
+
+    @Test
+    public void progressionTickLetsDefendingTowerAttackTheRunningUnit() {
+        C_Game game = new C_Game(horizontalMap(), new RecordingGameClock());
+        M_SmallTower tower = new M_SmallTower();
+        tower.setPos(2, 2);
+        game.addDefendingTower(tower);
+
+        game.tick(0);
+
+        assertEquals(75, game.getUnit().getUnit().getCurrentLife());
     }
 
     private M_Map horizontalMap() {

@@ -1,10 +1,15 @@
 package de.codecrunch.controller;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import de.codecrunch.gameplay.GameClock;
 import de.codecrunch.gameplay.GameEconomy;
 import de.codecrunch.gameplay.GameProgression;
 import de.codecrunch.gameplay.GdxGameClock;
 import de.codecrunch.gameplay.PathUnit;
+import de.codecrunch.gameplay.TowerCombat;
 import de.codecrunch.gameplay.UnitRoute;
 import de.codecrunch.model.ME_TileState;
 import de.codecrunch.model.M_Game;
@@ -20,6 +25,8 @@ public class C_Game {
 	private final GameProgression progression;
 	private final GameClock clock;
 	private final PathUnit unit;
+	private final TowerCombat towerCombat = new TowerCombat();
+	private final List<MA_Tower> defendingTowers = new ArrayList<>();
 	private V_Game view;
 	private M_Map map;
 
@@ -32,7 +39,7 @@ public class C_Game {
 		this.clock = clock;
 		economy = new GameEconomy();
 		computer = new C_Computer(this, economy);
-		progression = new GameProgression(economy, computer::tick);
+		progression = new GameProgression(economy, this::tick);
 		unit = UnitRoute.fromMap(map)
 				.map(route -> new PathUnit(new M_SmallUnit(), route))
 				.orElse(null);
@@ -62,12 +69,24 @@ public class C_Game {
 		return unit;
 	}
 
+	void tick(int timerCount) {
+		computer.tick(timerCount);
+		List<PathUnit> runningUnits = unit == null
+				? Collections.emptyList() : Collections.singletonList(unit);
+		towerCombat.attackAll(defendingTowers, runningUnits);
+	}
+
+	void addDefendingTower(MA_Tower tower) {
+		defendingTowers.add(tower);
+	}
+
 	public void dispose() {
 		clock.stop();
 	}
 	
 	public void placeTower(MA_Tower tower, int x, int y){
 			tower.setPos(x, y);
+			addDefendingTower(tower);
 			view.addTower(tower);
 			economy.spend(tower.getPrice());
 			map.getTile(x, y).setTileState(ME_TileState.OCCUPIED);

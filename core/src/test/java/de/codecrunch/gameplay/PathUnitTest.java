@@ -58,8 +58,22 @@ public class PathUnitTest {
         unit.update(1f);
 
         assertTrue(unit.isFinished());
+        assertFalse(unit.isRunning());
         assertEquals(2f, unit.getX(), 0.001f);
         assertEquals(2f, unit.getY(), 0.001f);
+    }
+
+    @Test
+    public void deadUnitIsNotRunningAndStopsMoving() {
+        PathUnit unit = new PathUnit(new M_SmallUnit(), route());
+        unit.getUnit().takeDamage(unit.getUnit().getMaxLife());
+
+        unit.update(1f);
+
+        assertFalse(unit.isRunning());
+        assertEquals(1f, unit.getX(), 0.001f);
+        assertEquals(1f, unit.getY(), 0.001f);
+        assertEquals(0f, unit.getRouteProgress(), 0.001f);
     }
 
     @Test
