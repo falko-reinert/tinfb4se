@@ -12,8 +12,12 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.environment.PointLight;
+import com.badlogic.gdx.graphics.glutils.HdpiUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
+
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 import de.codecrunch.Model3DFactory;
 import de.codecrunch.controller.C_Game;
@@ -25,12 +29,12 @@ import de.codecrunch.render.TileVisualFactory;
 
 public class V_Game extends VA_Screen {
 
-	private final float CAM_DISTANCE = 26.3f;//26.3
-	private final float CAM_LOWER = 20.3f;//20.3
-	private final float CAM_UPPER = 169.7f;//169.7
-	private final float MAP_MIDDLE = 40f;//40
-	private final float MAP_BRIGHTNESS = 1f;
-	private final float TILE_DISTANCE = 10f;
+	private static final float CAMERA_FIELD_OF_VIEW = 60f;
+	private static final float BACKGROUND_CHANNEL = 120f / 255f;
+	private static final float MAP_BRIGHTNESS = 1f;
+	private static final float TILE_DISTANCE = 10f;
+	private final GameCameraLayout cameraLayout =
+			new GameCameraLayout(M_Map.x_count, M_Map.y_count, TILE_DISTANCE);
 
 	private C_Game controller;
 
@@ -46,7 +50,7 @@ public class V_Game extends VA_Screen {
 
 	private float cameraMotion = 0f;
 	private final GameInputProcessor inputProcessor = new GameInputProcessor();
-	private ModelInstance unitModel;
+	private final Map<PathUnit, ModelInstance> unitModels = new IdentityHashMap<>();
 
 	public V_Game() {
 		super();
@@ -56,12 +60,14 @@ public class V_Game extends VA_Screen {
 	public void setup() {
 
 		camera = new PerspectiveCamera(
-				90,
+				CAMERA_FIELD_OF_VIEW,
 				Gdx.graphics.getWidth(),
 				Gdx.graphics.getHeight());
 
-		camera.direction.set(0.0001f, -1f, 0f);
-		camera.position.set(CAM_LOWER, CAM_DISTANCE, MAP_MIDDLE);
+		camera.direction.set(0f, -1f, 0f);
+		camera.up.set(0f, 0f, -1f);
+		camera.position.set(cameraLayout.centerX(),
+				cameraLayout.cameraDistance(CAMERA_FIELD_OF_VIEW), cameraLayout.centerZ());
 		camera.near = 0.1f;
 		camera.far = 120.0f;
 		camera.update();
@@ -87,16 +93,18 @@ public class V_Game extends VA_Screen {
 	}
 
 	public void addUnit(PathUnit unit) {
-		unitModel = Model3DFactory.instantiate(
+		ModelInstance unitModel = Model3DFactory.instantiate(
 				Model3DFactory.loadModel("towers/stub.g3db"));
 		for (Material material : unitModel.materials) {
 			material.set(ColorAttribute.createDiffuse(Color.RED));
 		}
 		unitBatch.addElement(unitModel);
+		unitModels.put(unit, unitModel);
 		updateUnit(unit);
 	}
 
 	public void updateUnit(PathUnit unit) {
+		ModelInstance unitModel = unitModels.get(unit);
 		if (unitModel == null) return;
 		unitModel.transform.setToTranslation(
 				unit.getX() * TILE_DISTANCE, 1f, unit.getY() * TILE_DISTANCE);
@@ -122,8 +130,8 @@ public class V_Game extends VA_Screen {
 	@Override
 	public void render(float delta) {
 		if (controller != null) controller.update(delta);
-		Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		Gdx.gl.glClearColor(120, 120, 120, 1);
+		HdpiUtils.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		Gdx.gl.glClearColor(BACKGROUND_CHANNEL, BACKGROUND_CHANNEL, BACKGROUND_CHANNEL, 1f);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
 		camera.translate(cameraMotion, 0, 0);
@@ -146,17 +154,31 @@ public class V_Game extends VA_Screen {
 	}
 
 	private boolean limitCamera() {
-		if (camera.position.x > CAM_UPPER) {
-			camera.position.set(CAM_UPPER, camera.position.y, camera.position.z);
+		float aspectRatio = camera.viewportWidth / camera.viewportHeight;
+		float cameraUpper = cameraLayout.maximumCameraX(CAMERA_FIELD_OF_VIEW, aspectRatio);
+		float cameraLower = cameraLayout.minimumCameraX(CAMERA_FIELD_OF_VIEW, aspectRatio);
+		if (camera.position.x > cameraUpper) {
+			camera.position.set(cameraUpper, camera.position.y, camera.position.z);
 			cameraMotion = 0f;
 			return false;
 		}
-		if (camera.position.x < CAM_LOWER) {
-			camera.position.set(CAM_LOWER, camera.position.y, camera.position.z);
+		if (camera.position.x < cameraLower) {
+			camera.position.set(cameraLower, camera.position.y, camera.position.z);
 			cameraMotion = 0f;
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	public void resize(int width, int height) {
+		super.resize(width, height);
+		v_hud.stage.getViewport().update(width, height, true);
+		if (camera == null || height == 0) return;
+		camera.viewportWidth = width;
+		camera.viewportHeight = height;
+		limitCamera();
+		camera.update();
 	}
 
 	public class GameInputProcessor implements InputProcessor {

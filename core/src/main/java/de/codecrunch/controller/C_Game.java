@@ -19,12 +19,16 @@ import de.codecrunch.model.unit.M_SmallUnit;
 import de.codecrunch.view.V_Game;
 
 public class C_Game {
+	private static final int WAVE_SIZE = 3;
+	private static final int SPAWN_INTERVAL_TICKS = 2;
+
 	private M_Game model = new M_Game();
 	private final GameEconomy economy;
 	private final C_Computer computer;
 	private final GameProgression progression;
 	private final GameClock clock;
-	private final PathUnit unit;
+	private final UnitRoute unitRoute;
+	private final List<PathUnit> units = new ArrayList<>();
 	private final TowerCombat towerCombat = new TowerCombat();
 	private final List<MA_Tower> defendingTowers = new ArrayList<>();
 	private V_Game view;
@@ -40,9 +44,8 @@ public class C_Game {
 		economy = new GameEconomy();
 		computer = new C_Computer(this, economy);
 		progression = new GameProgression(economy, this::tick);
-		unit = UnitRoute.fromMap(map)
-				.map(route -> new PathUnit(new M_SmallUnit(), route))
-				.orElse(null);
+		unitRoute = UnitRoute.fromMap(map).orElse(null);
+		spawnUnit();
 	}
 
 	public void setView(V_Game view) {
@@ -52,28 +55,38 @@ public class C_Game {
 	public void start() {
 		view.loadMap(map);
 
-		clock.start(progression::advance);
-
 		computer.init(map);
 		view.setup();
-		if (unit != null) view.addUnit(unit);
+		for (PathUnit unit : units) view.addUnit(unit);
+		clock.start(progression::advance);
 	}
 
 	public void update(float deltaSeconds) {
-		if (unit == null) return;
-		unit.update(deltaSeconds);
-		if (view != null) view.updateUnit(unit);
+		for (PathUnit unit : units) {
+			unit.update(deltaSeconds);
+			if (view != null) view.updateUnit(unit);
+		}
 	}
 
 	PathUnit getUnit() {
-		return unit;
+		return units.isEmpty() ? null : units.get(0);
+	}
+
+	List<PathUnit> getUnits() {
+		return Collections.unmodifiableList(units);
 	}
 
 	void tick(int timerCount) {
 		computer.tick(timerCount);
-		List<PathUnit> runningUnits = unit == null
-				? Collections.emptyList() : Collections.singletonList(unit);
-		towerCombat.attackAll(defendingTowers, runningUnits);
+		if (timerCount > 0 && timerCount % SPAWN_INTERVAL_TICKS == 0) spawnUnit();
+		towerCombat.attackAll(defendingTowers, units);
+	}
+
+	private void spawnUnit() {
+		if (unitRoute == null || units.size() >= WAVE_SIZE) return;
+		PathUnit unit = new PathUnit(new M_SmallUnit(), unitRoute);
+		units.add(unit);
+		if (view != null) view.addUnit(unit);
 	}
 
 	void addDefendingTower(MA_Tower tower) {

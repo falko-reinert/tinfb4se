@@ -91,6 +91,22 @@ public class TowerCombatTest {
         assertEquals(50, unit.getUnit().getCurrentLife());
     }
 
+    @Test
+    public void laterTowerRetargetsWhenEarlierTowerDefeatsTheLeadingUnit() {
+        M_BigTower first = new M_BigTower();
+        first.setPos(2, 2);
+        M_BigTower second = new M_BigTower();
+        second.setPos(2, 2);
+        PathUnit following = unitAt(0f);
+        PathUnit leading = unitAt(0.5f);
+        leading.getUnit().setCurrentLife(TowerCombat.DAMAGE_PER_ATTACK);
+
+        combat.attackAll(Arrays.asList(first, second), Arrays.asList(following, leading));
+
+        assertEquals(0, leading.getUnit().getCurrentLife());
+        assertEquals(75, following.getUnit().getCurrentLife());
+    }
+
     private PathUnit unitAt(float seconds) {
         PathUnit unit = new PathUnit(new M_SmallUnit(), route);
         unit.update(seconds);

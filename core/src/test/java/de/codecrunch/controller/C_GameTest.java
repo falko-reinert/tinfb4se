@@ -56,6 +56,38 @@ public class C_GameTest {
         assertEquals(75, game.getUnit().getUnit().getCurrentLife());
     }
 
+    @Test
+    public void progressionSpawnsOneSmallWaveAtRegularIntervals() {
+        C_Game game = new C_Game(horizontalMap(), new RecordingGameClock());
+
+        assertEquals(1, game.getUnits().size());
+
+        game.tick(1);
+        assertEquals(1, game.getUnits().size());
+        game.tick(2);
+        assertEquals(2, game.getUnits().size());
+        game.tick(4);
+        game.tick(6);
+
+        assertEquals(3, game.getUnits().size());
+    }
+
+    @Test
+    public void spawnedUnitsFollowTheRouteWithWaveSpacing() {
+        C_Game game = new C_Game(horizontalMap(), new RecordingGameClock());
+
+        game.update(0.5f);
+        game.tick(2);
+
+        game.update(0.25f);
+        game.tick(4);
+
+        assertEquals(3, game.getUnits().size());
+        assertEquals(2.5f, game.getUnits().get(0).getX(), 0.001f);
+        assertEquals(1.5f, game.getUnits().get(1).getX(), 0.001f);
+        assertEquals(1f, game.getUnits().get(2).getX(), 0.001f);
+    }
+
     private M_Map horizontalMap() {
         M_Map map = new M_Map();
         map.getTile(1, 1).setTileState(ME_TileState.START);
