@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 import de.codecrunch.gameplay.GameClock;
 import de.codecrunch.gameplay.GameEconomy;
@@ -11,6 +13,7 @@ import de.codecrunch.gameplay.GameProgression;
 import de.codecrunch.gameplay.GdxGameClock;
 import de.codecrunch.gameplay.PathUnit;
 import de.codecrunch.gameplay.TowerCombat;
+import de.codecrunch.gameplay.TowerShot;
 import de.codecrunch.gameplay.UnitOutcome;
 import de.codecrunch.gameplay.UnitRoute;
 import de.codecrunch.model.ME_TileState;
@@ -24,6 +27,8 @@ public class C_Game {
 	private static final int WAVE_SIZE = 3;
 	private static final int SPAWN_INTERVAL_TICKS = 2;
 	private static final int INITIAL_BASE_INTEGRITY = 3;
+	private static final float TURRET_TURN_DEGREES_PER_SECOND = 720f;
+	private static final float FIRE_ALIGNMENT_DEGREES = 2f;
 
 	private M_Game model = new M_Game();
 	private final GameEconomy economy;
@@ -34,6 +39,8 @@ public class C_Game {
 	private final List<PathUnit> units = new ArrayList<>();
 	private final TowerCombat towerCombat = new TowerCombat();
 	private final List<MA_Tower> defendingTowers = new ArrayList<>();
+	private final List<TowerShot> pendingShots = new ArrayList<>();
+	private final Map<MA_Tower, Float> towerYaws = new IdentityHashMap<>();
 	private int spawnedUnitCount;
 	private int baseIntegrity = INITIAL_BASE_INTEGRITY;
 	private UnitOutcome lastUnitOutcome;
@@ -73,6 +80,7 @@ public class C_Game {
 			unit.update(deltaSeconds);
 			if (view != null) view.updateUnit(unit);
 		}
+		updatePendingShots(deltaSeconds);
 		removeResolvedUnits();
 	}
 
@@ -95,8 +103,47 @@ public class C_Game {
 	void tick(int timerCount) {
 		computer.tick(timerCount);
 		if (timerCount > 0 && timerCount % SPAWN_INTERVAL_TICKS == 0) spawnUnit();
-		towerCombat.attackAll(defendingTowers, units);
+		for (MA_Tower tower : defendingTowers) {
+			PathUnit target = towerCombat.selectTarget(tower, units);
+			if (target != null) {
+				pendingShots.add(new TowerShot(tower, target));
+			}
+		}
 		removeResolvedUnits();
+	}
+
+	private void updatePendingShots(float deltaSeconds) {
+		Iterator<TowerShot> iterator = pendingShots.iterator();
+		while (iterator.hasNext()) {
+			TowerShot shot = iterator.next();
+			if (!shot.getTarget().isRunning()) {
+				iterator.remove();
+				continue;
+			}
+			float currentYaw = towerYaws.containsKey(shot.getTower()) ? towerYaws.get(shot.getTower()) : 0f;
+			float targetYaw = targetYaw(shot.getTower(), shot.getTarget());
+			float difference = normalizeAngle(targetYaw - currentYaw);
+			float maximumTurn = TURRET_TURN_DEGREES_PER_SECOND * deltaSeconds;
+			float nextYaw = normalizeAngle(currentYaw + Math.max(-maximumTurn, Math.min(maximumTurn, difference)));
+			towerYaws.put(shot.getTower(), nextYaw);
+			if (view != null) view.setTowerYaw(shot.getTower(), nextYaw);
+			if (Math.abs(normalizeAngle(targetYaw - nextYaw)) <= FIRE_ALIGNMENT_DEGREES) {
+				shot.getTarget().getUnit().takeDamage(TowerCombat.DAMAGE_PER_ATTACK);
+				if (view != null) view.showTowerShot(shot.getTower());
+				iterator.remove();
+			}
+		}
+	}
+
+	private float targetYaw(MA_Tower tower, PathUnit target) {
+		return (float) Math.toDegrees(Math.atan2(target.getX() - tower.getX(), target.getY() - tower.getY()));
+	}
+
+	private float normalizeAngle(float angle) {
+		float normalized = angle % 360f;
+		if (normalized > 180f) return normalized - 360f;
+		if (normalized < -180f) return normalized + 360f;
+		return normalized;
 	}
 
 	private void spawnUnit() {

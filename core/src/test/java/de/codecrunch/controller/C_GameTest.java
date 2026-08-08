@@ -46,13 +46,18 @@ public class C_GameTest {
     }
 
     @Test
-    public void progressionTickLetsDefendingTowerAttackTheRunningUnit() {
+    public void progressionTickFiresAfterTheShortAimingPhase() {
         C_Game game = new C_Game(horizontalMap(), new RecordingGameClock());
         M_SmallTower tower = new M_SmallTower();
         tower.setPos(2, 2);
         game.addDefendingTower(tower);
 
         game.tick(0);
+
+        assertEquals(100, game.getUnit().getUnit().getCurrentLife());
+        game.update(0.1f);
+        assertEquals(100, game.getUnit().getUnit().getCurrentLife());
+        game.update(0.2f);
 
         assertEquals(75, game.getUnit().getUnit().getCurrentLife());
     }

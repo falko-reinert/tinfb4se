@@ -6,6 +6,9 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -23,7 +26,7 @@ public class V_HUD implements Disposable {
     private final Label unitOutcomeLabel;
     private final Vector3 projectedUnitPosition = new Vector3();
 
-    public V_HUD(SpriteBatch sb){
+    public V_HUD(SpriteBatch sb, final Runnable exitGameAction){
         viewport = new FitViewport(1024,576, new OrthographicCamera());
         stage = new Stage(viewport, sb);
         font = new BitmapFont();
@@ -33,6 +36,15 @@ public class V_HUD implements Disposable {
         unitOutcomeLabel = new Label("Last unit: -", new Label.LabelStyle(font, Color.WHITE));
         unitOutcomeLabel.setPosition(20f, viewport.getWorldHeight() - 65f);
         stage.addActor(unitOutcomeLabel);
+        TextButton exitGame = new TextButton("Exit game", VA_Screen.uiSkin);
+        exitGame.setPosition(20f, 20f);
+        exitGame.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                exitGameAction.run();
+            }
+        });
+        stage.addActor(exitGame);
     }
 
     public void setBaseIntegrity(int baseIntegrity) {

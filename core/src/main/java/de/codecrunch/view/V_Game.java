@@ -1,6 +1,8 @@
 package de.codecrunch.view;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -8,15 +10,19 @@ import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Material;
+import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.graphics.glutils.HdpiUtils;
+import com.badlogic.gdx.graphics.VertexAttributes.Usage;
+import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import de.codecrunch.Model3DFactory;
@@ -34,6 +40,7 @@ public class V_Game extends VA_Screen {
 	private static final float BACKGROUND_CHANNEL = 120f / 255f;
 	private static final float MAP_BRIGHTNESS = 1f;
 	private static final float TILE_DISTANCE = 10f;
+	private static final float TOWER_MODEL_FORWARD_OFFSET_DEGREES = -90f;
 	private final GameCameraLayout cameraLayout =
 			new GameCameraLayout(M_Map.x_count, M_Map.y_count, TILE_DISTANCE);
 
@@ -41,21 +48,33 @@ public class V_Game extends VA_Screen {
 
 	private PerspectiveCamera camera;
 	private SpriteBatch hudBatch = new SpriteBatch();
-	V_HUD v_hud = new V_HUD(hudBatch);
+	private final V_HUD v_hud;
 	private RenderBatch mapBatch = new RenderBatch();
 	private RenderBatch towerBatch = new RenderBatch();
 	private RenderBatch unitBatch = new RenderBatch();
+	private RenderBatch muzzleFlashBatch = new RenderBatch();
 	private TileVisualFactory tileVisualFactory = new TileVisualFactory();
 	private Environment environment = new Environment();
 	private PointLight mouseLight = new PointLight().set(1f, 1f, 1f, 30f, 1f, 40f, 100f);
 
 	private float cameraMotion = 0f;
-	private final GameInputProcessor inputProcessor = new GameInputProcessor();
+	private final GameInputProcessor gameInputProcessor = new GameInputProcessor();
+	private final InputMultiplexer inputProcessor;
+	private final Runnable exitGameAction;
 	private final Map<PathUnit, ModelInstance> unitModels = new IdentityHashMap<>();
+	private final Map<MA_Tower, TowerVisual> towerModels = new IdentityHashMap<>();
+	private final Map<ModelInstance, Float> activeMuzzleFlashes = new IdentityHashMap<>();
+	private Model muzzleFlashModel;
 
 	public V_Game() {
-		super();
+		this(() -> { });
+	}
 
+	public V_Game(Runnable exitGameAction) {
+		super();
+		this.exitGameAction = exitGameAction;
+		v_hud = new V_HUD(hudBatch, exitGameAction);
+		inputProcessor = new InputMultiplexer(v_hud.stage, gameInputProcessor);
 	}
 
 	public void setup() {
@@ -74,6 +93,8 @@ public class V_Game extends VA_Screen {
 		camera.update();
 
 		environment.set(new ColorAttribute(ColorAttribute.AmbientLight, MAP_BRIGHTNESS, MAP_BRIGHTNESS, MAP_BRIGHTNESS, 1.0f));
+		muzzleFlashModel = new ModelBuilder().createSphere(1f, 1f, 1f, 12, 12,
+				new Material(ColorAttribute.createDiffuse(Color.YELLOW)), Usage.Position | Usage.Normal);
 		//environment.add(mouseLight);
 	}
 
@@ -91,6 +112,30 @@ public class V_Game extends VA_Screen {
 		model.transform.setTranslation(tower.getX() * TILE_DISTANCE, 0.5f,
 				tower.getY() * TILE_DISTANCE);
 		towerBatch.addElement(model);
+		TowerVisual visual = new TowerVisual(model);
+		towerModels.put(tower, visual);
+		updateTowerTransform(tower, visual);
+	}
+
+	public void setTowerYaw(MA_Tower tower, float yaw) {
+		TowerVisual visual = towerModels.get(tower);
+		if (visual == null) return;
+		visual.currentYaw = yaw;
+		updateTowerTransform(tower, visual);
+	}
+
+	public void showTowerShot(MA_Tower tower) {
+		TowerVisual visual = towerModels.get(tower);
+		if (visual == null) return;
+		float radians = (float) Math.toRadians(visual.currentYaw);
+		float xDirection = (float) Math.sin(radians);
+		float yDirection = (float) Math.cos(radians);
+		ModelInstance flash = new ModelInstance(muzzleFlashModel);
+		flash.transform.setToTranslation((tower.getX() + xDirection * 0.75f) * TILE_DISTANCE,
+				1.65f, (tower.getY() + yDirection * 0.75f) * TILE_DISTANCE);
+		flash.transform.scale(0.25f, 0.25f, 0.25f);
+		muzzleFlashBatch.addElement(flash);
+		activeMuzzleFlashes.put(flash, 0.12f);
 	}
 
 	public void addUnit(PathUnit unit) {
@@ -138,6 +183,8 @@ public class V_Game extends VA_Screen {
 		mapBatch.dispose();
 		towerBatch.dispose();
 		unitBatch.dispose();
+		muzzleFlashBatch.dispose();
+		if (muzzleFlashModel != null) muzzleFlashModel.dispose();
 		tileVisualFactory.dispose();
 		v_hud.dispose();
 		hudBatch.dispose();
@@ -169,10 +216,44 @@ public class V_Game extends VA_Screen {
 		unitBatch.begin(camera);
 		unitBatch.renderAll(environment);
 		unitBatch.end();
+		updateMuzzleFlashes(delta);
+		muzzleFlashBatch.begin(camera);
+		muzzleFlashBatch.renderAll(environment);
+		muzzleFlashBatch.end();
 		hudBatch.setProjectionMatrix(v_hud.stage.getCamera().combined);
 		v_hud.stage.draw();
 		if (controller != null) v_hud.drawUnitHealth(camera, controller.getUnits());
 
+	}
+
+	private void updateMuzzleFlashes(float deltaSeconds) {
+		Iterator<Map.Entry<ModelInstance, Float>> iterator = activeMuzzleFlashes.entrySet().iterator();
+		while (iterator.hasNext()) {
+			Map.Entry<ModelInstance, Float> flash = iterator.next();
+			float remainingSeconds = flash.getValue() - deltaSeconds;
+			if (remainingSeconds > 0f) {
+				flash.setValue(remainingSeconds);
+			} else {
+				muzzleFlashBatch.removeElement(flash.getKey());
+				iterator.remove();
+			}
+		}
+	}
+
+	private void updateTowerTransform(MA_Tower tower, TowerVisual visual) {
+		visual.base.transform.setToTranslation(tower.getX() * TILE_DISTANCE, 0.5f,
+				tower.getY() * TILE_DISTANCE);
+		visual.base.transform.rotate(Vector3.Y,
+				visual.currentYaw + TOWER_MODEL_FORWARD_OFFSET_DEGREES);
+	}
+
+	private static final class TowerVisual {
+		private final ModelInstance base;
+		private float currentYaw;
+
+		private TowerVisual(ModelInstance base) {
+			this.base = base;
+		}
 	}
 
 	private boolean limitCamera() {
@@ -207,6 +288,10 @@ public class V_Game extends VA_Screen {
 
 		@Override
 		public boolean keyDown(int keycode) {
+			if (keycode == Input.Keys.ESCAPE) {
+				exitGameAction.run();
+				return true;
+			}
 			return false;
 		}
 

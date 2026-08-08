@@ -49,7 +49,7 @@ public class TowerAttackGame extends Game implements ScreenNavigator {
     private VA_Screen getOrCreateScreen(ScreenId screenId) {
         switch (screenId) {
             case GAME:
-                if (gameScreen == null) gameScreen = new V_Game();
+                if (gameScreen == null) gameScreen = new V_Game(this::exitGame);
                 return gameScreen;
             case GAME_LEVEL_SELECT:
                 if (levelSelectScreen == null)
@@ -98,7 +98,7 @@ public class TowerAttackGame extends Game implements ScreenNavigator {
         //Loads 3d Models -> May be put in loading screen later.
         Model3DFactory.setup();
 
-        V_Game nextScreen = new V_Game();
+        V_Game nextScreen = new V_Game(this::exitGame);
         C_Game nextGame = new C_Game(map);
         nextGame.setView(nextScreen);
         nextScreen.setController(nextGame);
@@ -109,6 +109,15 @@ public class TowerAttackGame extends Game implements ScreenNavigator {
         game = nextGame;
         gameScreen = nextScreen;
         activateScreen(nextScreen);
+        disposeGameSession(previousGame, previousScreen);
+    }
+
+    private void exitGame() {
+        C_Game previousGame = game;
+        V_Game previousScreen = gameScreen;
+        game = null;
+        gameScreen = null;
+        activateScreen(getOrCreateScreen(ScreenId.MENU));
         disposeGameSession(previousGame, previousScreen);
     }
 

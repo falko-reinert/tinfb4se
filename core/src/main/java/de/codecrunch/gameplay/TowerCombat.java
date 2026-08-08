@@ -12,6 +12,7 @@ public final class TowerCombat {
         for (MA_Tower tower : towers) attack(tower, units);
     }
 
+
     public PathUnit attack(MA_Tower tower, List<PathUnit> units) {
         PathUnit target = selectTarget(tower, units);
         if (target != null) target.getUnit().takeDamage(DAMAGE_PER_ATTACK);
