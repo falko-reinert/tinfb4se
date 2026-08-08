@@ -31,7 +31,7 @@ public class C_Game {
 	public static final int SMALL_UNIT_COST = 1;
 	public static final int FAST_UNIT_COST = 3;
 	private static final int INITIAL_PLAYER_BUDGET = 5;
-	private static final int INITIAL_BASE_INTEGRITY = 3;
+	private static final int INITIAL_ENEMY_BASE_INTEGRITY = 3;
 	private static final float TURRET_TURN_DEGREES_PER_SECOND = 720f;
 	private static final float FIRE_ALIGNMENT_DEGREES = 2f;
 
@@ -48,9 +48,10 @@ public class C_Game {
 	private final Map<MA_Tower, Float> towerYaws = new IdentityHashMap<>();
 	private int spawnedUnitCount;
 	private int playerBudget = INITIAL_PLAYER_BUDGET;
-	private int baseIntegrity = INITIAL_BASE_INTEGRITY;
+	private int enemyBaseIntegrity = INITIAL_ENEMY_BASE_INTEGRITY;
 	private UnitOutcome lastUnitOutcome;
 	private WaveResult waveResult = WaveResult.IN_PROGRESS;
+	private boolean computerEnabled = true;
 	private V_Game view;
 	private M_Map map;
 
@@ -71,6 +72,10 @@ public class C_Game {
 		this.view = view;
 	}
 
+	public void disableComputer() {
+		computerEnabled = false;
+	}
+
 	public void start() {
 		view.loadMap(map);
 
@@ -78,7 +83,7 @@ public class C_Game {
 		view.setup();
 		for (MA_Tower tower : defendingTowers) view.addTower(tower);
 		for (PathUnit unit : units) view.addUnit(unit);
-		view.setBaseIntegrity(baseIntegrity);
+		view.setEnemyBaseIntegrity(enemyBaseIntegrity);
 		view.setWaveResult(waveResult);
 		updateDeploymentOptions();
 		clock.start(progression::advance);
@@ -102,8 +107,8 @@ public class C_Game {
 		return Collections.unmodifiableList(units);
 	}
 
-	int getBaseIntegrity() {
-		return baseIntegrity;
+	int getEnemyBaseIntegrity() {
+		return enemyBaseIntegrity;
 	}
 
 	UnitOutcome getLastUnitOutcome() {
@@ -145,7 +150,7 @@ public class C_Game {
 
 	void tick(int timerCount) {
 		if (waveResult != WaveResult.IN_PROGRESS) return;
-		computer.tick(timerCount);
+		if (computerEnabled) computer.tick(timerCount);
 		for (MA_Tower tower : defendingTowers) {
 			PathUnit target = towerCombat.selectTarget(tower, units);
 			if (target != null) {
@@ -204,8 +209,8 @@ public class C_Game {
 			PathUnit unit = iterator.next();
 			if (unit.isRunning()) continue;
 			if (unit.isFinished()) {
-				baseIntegrity--;
-				if (view != null) view.setBaseIntegrity(baseIntegrity);
+				enemyBaseIntegrity--;
+				if (view != null) view.setEnemyBaseIntegrity(enemyBaseIntegrity);
 				lastUnitOutcome = UnitOutcome.ESCAPED;
 			} else {
 				lastUnitOutcome = UnitOutcome.DEFEATED;
@@ -218,10 +223,10 @@ public class C_Game {
 	}
 
 	private void finishWaveIfNeeded() {
-		if (baseIntegrity <= 0) {
-			finishWave(WaveResult.BASE_DESTROYED);
+		if (enemyBaseIntegrity <= 0) {
+			finishWave(WaveResult.VICTORY);
 		} else if (spawnedUnitCount == WAVE_SIZE && units.isEmpty()) {
-			finishWave(WaveResult.COMPLETE);
+			finishWave(WaveResult.DEFEAT);
 		}
 	}
 

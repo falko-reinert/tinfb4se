@@ -181,8 +181,8 @@ public class V_Game extends VA_Screen {
 		if (unitModel != null) unitBatch.removeElement(unitModel);
 	}
 
-	public void setBaseIntegrity(int baseIntegrity) {
-		v_hud.setBaseIntegrity(baseIntegrity);
+	public void setEnemyBaseIntegrity(int enemyBaseIntegrity) {
+		v_hud.setEnemyBaseIntegrity(enemyBaseIntegrity);
 	}
 
 	public void setUnitOutcome(UnitOutcome outcome) {

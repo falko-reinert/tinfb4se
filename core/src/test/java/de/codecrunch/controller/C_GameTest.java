@@ -114,18 +114,18 @@ public class C_GameTest {
         assertEquals(2, game.getUnits().size());
 		assertEquals(2.5f, game.getUnits().get(0).getX(), 0.001f);
 		assertEquals(1.5f, game.getUnits().get(1).getX(), 0.001f);
-		assertEquals(3, game.getBaseIntegrity());
+		assertEquals(3, game.getEnemyBaseIntegrity());
     }
 
     @Test
-    public void unitThatReachesTheEndReducesBaseIntegrityOnceAndIsRemoved() {
+    public void unitThatReachesTheEndDamagesEnemyBaseOnceAndIsRemoved() {
         C_Game game = new C_Game(horizontalMap(), new RecordingGameClock());
 		game.deploySmallUnit();
 
         game.update(1f);
         game.update(1f);
 
-        assertEquals(2, game.getBaseIntegrity());
+		assertEquals(2, game.getEnemyBaseIntegrity());
         assertEquals(UnitOutcome.ESCAPED, game.getLastUnitOutcome());
         assertTrue(game.getUnits().isEmpty());
     }
@@ -138,7 +138,7 @@ public class C_GameTest {
 
         game.update(0.1f);
 
-        assertEquals(3, game.getBaseIntegrity());
+		assertEquals(3, game.getEnemyBaseIntegrity());
         assertEquals(UnitOutcome.DEFEATED, game.getLastUnitOutcome());
         assertTrue(game.getUnits().isEmpty());
     }
@@ -154,8 +154,8 @@ public class C_GameTest {
             game.update(0f);
         }
 
-        assertEquals(WaveResult.COMPLETE, game.getWaveResult());
-        assertEquals(3, game.getBaseIntegrity());
+		assertEquals(WaveResult.DEFEAT, game.getWaveResult());
+		assertEquals(3, game.getEnemyBaseIntegrity());
     }
 
     @Test
@@ -167,8 +167,8 @@ public class C_GameTest {
 
         game.update(2f);
 
-        assertEquals(WaveResult.BASE_DESTROYED, game.getWaveResult());
-        assertEquals(0, game.getBaseIntegrity());
+		assertEquals(WaveResult.VICTORY, game.getWaveResult());
+		assertEquals(0, game.getEnemyBaseIntegrity());
     }
 
     private M_Map horizontalMap() {

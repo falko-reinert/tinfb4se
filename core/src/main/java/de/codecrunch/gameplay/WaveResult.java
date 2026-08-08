@@ -2,8 +2,8 @@ package de.codecrunch.gameplay;
 
 public enum WaveResult {
     IN_PROGRESS("Wave: active"),
-    COMPLETE("Wave complete!"),
-    BASE_DESTROYED("Base destroyed");
+    VICTORY("Victory!"),
+    DEFEAT("Defeat");
 
     private final String displayText;
 

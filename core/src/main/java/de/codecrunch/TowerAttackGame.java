@@ -102,19 +102,21 @@ public class TowerAttackGame extends Game implements ScreenNavigator {
 
     public void startGame(M_Map map) {
 		M_Map initialMap = copyMap(map);
-		startGame(copyMap(initialMap), () -> startGame(copyMap(initialMap)), null);
+		startGame(copyMap(initialMap), () -> startGame(copyMap(initialMap)), null, true);
 	}
 
 	private void startCombatDemo() {
-		startGame(CombatDemoMap.create(), this::startCombatDemo, new M_MediumTower());
+		startGame(CombatDemoMap.create(), this::startCombatDemo, new M_MediumTower(), false);
 	}
 
-	private void startGame(M_Map map, Runnable replayAction, M_MediumTower startingTower) {
+	private void startGame(M_Map map, Runnable replayAction, M_MediumTower startingTower,
+			boolean computerEnabled) {
         //Loads 3d Models -> May be put in loading screen later.
         Model3DFactory.setup();
 
         V_Game nextScreen = new V_Game(this::exitGame, replayAction);
         C_Game nextGame = new C_Game(map);
+		if (!computerEnabled) nextGame.disableComputer();
 		if (startingTower != null) nextGame.addStartingTower(startingTower, 7, 6);
         nextGame.setView(nextScreen);
         nextScreen.setController(nextGame);

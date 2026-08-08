@@ -40,7 +40,7 @@ public class V_HUD implements Disposable {
         viewport = new FitViewport(1024,576, new OrthographicCamera());
         stage = new Stage(viewport, sb);
         font = new BitmapFont();
-        baseIntegrityLabel = new Label("Base integrity: 3", new Label.LabelStyle(font, Color.WHITE));
+        baseIntegrityLabel = new Label("Enemy base integrity: 3", new Label.LabelStyle(font, Color.WHITE));
         baseIntegrityLabel.setPosition(20f, viewport.getWorldHeight() - 35f);
         stage.addActor(baseIntegrityLabel);
         unitOutcomeLabel = new Label("Last unit: -", new Label.LabelStyle(font, Color.WHITE));
@@ -91,8 +91,8 @@ public class V_HUD implements Disposable {
 		stage.addActor(deployFastUnit);
     }
 
-    public void setBaseIntegrity(int baseIntegrity) {
-        baseIntegrityLabel.setText("Base integrity: " + baseIntegrity);
+    public void setEnemyBaseIntegrity(int enemyBaseIntegrity) {
+        baseIntegrityLabel.setText("Enemy base integrity: " + enemyBaseIntegrity);
     }
 
     public void setUnitOutcome(UnitOutcome outcome) {
@@ -101,7 +101,8 @@ public class V_HUD implements Disposable {
 
     public void setWaveResult(WaveResult result) {
         waveResultLabel.setText(result.getDisplayText());
-        waveResultLabel.setColor(result == WaveResult.BASE_DESTROYED ? Color.RED : Color.WHITE);
+        waveResultLabel.setColor(result == WaveResult.DEFEAT ? Color.RED
+                : result == WaveResult.VICTORY ? Color.GREEN : Color.WHITE);
     }
 
 	public void setDeploymentOptions(int remaining, int budget, int smallCost, int fastCost) {
