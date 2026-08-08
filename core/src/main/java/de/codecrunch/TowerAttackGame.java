@@ -1,5 +1,8 @@
 package de.codecrunch;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 
@@ -8,6 +11,7 @@ import de.codecrunch.controller.C_Game;
 import de.codecrunch.controller.C_LevelSelect;
 import de.codecrunch.controller.C_Settings;
 import de.codecrunch.model.M_Map;
+import de.codecrunch.model.M_Tile;
 import de.codecrunch.persistence.GdxSettingsStore;
 import de.codecrunch.persistence.LocalMapRepository;
 import de.codecrunch.persistence.MapRepository;
@@ -18,6 +22,8 @@ import de.codecrunch.view.V_Game;
 import de.codecrunch.view.V_GameLevelSelect;
 import de.codecrunch.view.V_Menu;
 import de.codecrunch.view.V_Settings;
+import de.codecrunch.gameplay.CombatDemoMap;
+import de.codecrunch.model.tower.M_MediumTower;
 
 public class TowerAttackGame extends Game implements ScreenNavigator {
 
@@ -49,7 +55,7 @@ public class TowerAttackGame extends Game implements ScreenNavigator {
     private VA_Screen getOrCreateScreen(ScreenId screenId) {
         switch (screenId) {
             case GAME:
-                if (gameScreen == null) gameScreen = new V_Game(this::exitGame);
+                if (gameScreen == null) gameScreen = new V_Game(this::exitGame, () -> { });
                 return gameScreen;
             case GAME_LEVEL_SELECT:
                 if (levelSelectScreen == null)
@@ -57,7 +63,7 @@ public class TowerAttackGame extends Game implements ScreenNavigator {
                             new C_LevelSelect(mapRepository));
                 return levelSelectScreen;
             case MENU:
-                if (menuScreen == null) menuScreen = new V_Menu(this);
+                if (menuScreen == null) menuScreen = new V_Menu(this, this::startCombatDemo);
                 return menuScreen;
             case SETTINGS:
                 if (settingsScreen == null) settingsScreen = new V_Settings(this, settings);
@@ -95,11 +101,21 @@ public class TowerAttackGame extends Game implements ScreenNavigator {
     }
 
     public void startGame(M_Map map) {
+		M_Map initialMap = copyMap(map);
+		startGame(copyMap(initialMap), () -> startGame(copyMap(initialMap)), null);
+	}
+
+	private void startCombatDemo() {
+		startGame(CombatDemoMap.create(), this::startCombatDemo, new M_MediumTower());
+	}
+
+	private void startGame(M_Map map, Runnable replayAction, M_MediumTower startingTower) {
         //Loads 3d Models -> May be put in loading screen later.
         Model3DFactory.setup();
 
-        V_Game nextScreen = new V_Game(this::exitGame);
+        V_Game nextScreen = new V_Game(this::exitGame, replayAction);
         C_Game nextGame = new C_Game(map);
+		if (startingTower != null) nextGame.addStartingTower(startingTower, 7, 6);
         nextGame.setView(nextScreen);
         nextScreen.setController(nextGame);
         nextGame.start();
@@ -110,6 +126,27 @@ public class TowerAttackGame extends Game implements ScreenNavigator {
         gameScreen = nextScreen;
         activateScreen(nextScreen);
         disposeGameSession(previousGame, previousScreen);
+    }
+
+    private M_Map copyMap(M_Map source) {
+        M_Map copy = new M_Map();
+        copy.setMapName(source.getMapName());
+        List<M_Tile> copiedPath = new ArrayList<>();
+        for (int x = 0; x < M_Map.x_count; x++) {
+            for (int y = 0; y < M_Map.y_count; y++) {
+                M_Tile sourceTile = source.getTile(x, y);
+                M_Tile copyTile = copy.getTile(x, y);
+                copyTile.setTileState(sourceTile.getTileState());
+                copyTile.setTileRotation(sourceTile.getTileRotation());
+            }
+        }
+        if (source.getPath() != null) {
+            for (M_Tile tile : source.getPath()) {
+                copiedPath.add(copy.getTile(tile.x_pos, tile.y_pos));
+            }
+        }
+        copy.setPath(copiedPath);
+        return copy;
     }
 
     private void exitGame() {

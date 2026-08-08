@@ -29,6 +29,7 @@ import de.codecrunch.Model3DFactory;
 import de.codecrunch.controller.C_Game;
 import de.codecrunch.gameplay.PathUnit;
 import de.codecrunch.gameplay.UnitOutcome;
+import de.codecrunch.model.ME_TileState;
 import de.codecrunch.model.M_Map;
 import de.codecrunch.model.tower.MA_Tower;
 import de.codecrunch.render.RenderBatch;
@@ -37,7 +38,7 @@ import de.codecrunch.render.TileVisualFactory;
 public class V_Game extends VA_Screen {
 
 	private static final float CAMERA_FIELD_OF_VIEW = 60f;
-	private static final float BACKGROUND_CHANNEL = 120f / 255f;
+	private static final float BACKGROUND_CHANNEL = 0f;
 	private static final float MAP_BRIGHTNESS = 1f;
 	private static final float TILE_DISTANCE = 10f;
 	private static final float TOWER_MODEL_FORWARD_OFFSET_DEGREES = -90f;
@@ -67,13 +68,17 @@ public class V_Game extends VA_Screen {
 	private Model muzzleFlashModel;
 
 	public V_Game() {
-		this(() -> { });
+		this(() -> { }, () -> { });
 	}
 
 	public V_Game(Runnable exitGameAction) {
+		this(exitGameAction, () -> { });
+	}
+
+	public V_Game(Runnable exitGameAction, Runnable replayAction) {
 		super();
 		this.exitGameAction = exitGameAction;
-		v_hud = new V_HUD(hudBatch, exitGameAction);
+		v_hud = new V_HUD(hudBatch, exitGameAction, replayAction);
 		inputProcessor = new InputMultiplexer(v_hud.stage, gameInputProcessor);
 	}
 
@@ -103,7 +108,12 @@ public class V_Game extends VA_Screen {
 	}
 
 	public void loadMap(M_Map map) {
-		map.foreachTile(tile -> mapBatch.addElement(tileVisualFactory.createGameModel(tile)));
+		map.foreachTile(tile -> {
+			if (tile.getTileState() != ME_TileState.EMPTY
+					&& tile.getTileState() != ME_TileState.OCCUPIED) {
+				mapBatch.addElement(tileVisualFactory.createGameModel(tile));
+			}
+		});
 	}
 
 	public void addTower(MA_Tower tower) {

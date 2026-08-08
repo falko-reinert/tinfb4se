@@ -26,7 +26,7 @@ public class V_HUD implements Disposable {
     private final Label unitOutcomeLabel;
     private final Vector3 projectedUnitPosition = new Vector3();
 
-    public V_HUD(SpriteBatch sb, final Runnable exitGameAction){
+    public V_HUD(SpriteBatch sb, final Runnable exitGameAction, final Runnable replayAction){
         viewport = new FitViewport(1024,576, new OrthographicCamera());
         stage = new Stage(viewport, sb);
         font = new BitmapFont();
@@ -45,6 +45,15 @@ public class V_HUD implements Disposable {
             }
         });
         stage.addActor(exitGame);
+        TextButton replay = new TextButton("Replay", VA_Screen.uiSkin);
+        replay.setPosition(160f, 20f);
+        replay.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                replayAction.run();
+            }
+        });
+        stage.addActor(replay);
     }
 
     public void setBaseIntegrity(int baseIntegrity) {

@@ -70,6 +70,7 @@ public class C_Game {
 
 		computer.init(map);
 		view.setup();
+		for (MA_Tower tower : defendingTowers) view.addTower(tower);
 		for (PathUnit unit : units) view.addUnit(unit);
 		view.setBaseIntegrity(baseIntegrity);
 		clock.start(progression::advance);
@@ -174,6 +175,12 @@ public class C_Game {
 
 	void addDefendingTower(MA_Tower tower) {
 		defendingTowers.add(tower);
+	}
+
+	public void addStartingTower(MA_Tower tower, int x, int y) {
+		tower.setPos(x, y);
+		addDefendingTower(tower);
+		map.getTile(x, y).setTileState(ME_TileState.OCCUPIED);
 	}
 
 	public void dispose() {
