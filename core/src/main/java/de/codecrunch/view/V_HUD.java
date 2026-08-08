@@ -27,10 +27,11 @@ public class V_HUD implements Disposable {
     private final Label unitOutcomeLabel;
     private final Label waveResultLabel;
 	private final TextButton deploySmallUnit;
+	private final TextButton deployFastUnit;
     private final Vector3 projectedUnitPosition = new Vector3();
 
     public V_HUD(SpriteBatch sb, final Runnable exitGameAction, final Runnable replayAction,
-            final Runnable deploySmallUnitAction){
+            final Runnable deploySmallUnitAction, final Runnable deployFastUnitAction){
         viewport = new FitViewport(1024,576, new OrthographicCamera());
         stage = new Stage(viewport, sb);
         font = new BitmapFont();
@@ -62,7 +63,7 @@ public class V_HUD implements Disposable {
             }
         });
         stage.addActor(replay);
-		deploySmallUnit = new TextButton("Send small unit (3 left)", VA_Screen.uiSkin);
+		deploySmallUnit = new TextButton("Send small: 100 HP, speed 2 (3 left)", VA_Screen.uiSkin);
 		deploySmallUnit.setPosition(300f, 20f);
 		deploySmallUnit.addListener(new ChangeListener() {
 			@Override
@@ -71,6 +72,15 @@ public class V_HUD implements Disposable {
 			}
 		});
 		stage.addActor(deploySmallUnit);
+		deployFastUnit = new TextButton("Send fast: 200 HP, speed 4 (3 left)", VA_Screen.uiSkin);
+		deployFastUnit.setPosition(560f, 20f);
+		deployFastUnit.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				deployFastUnitAction.run();
+			}
+		});
+		stage.addActor(deployFastUnit);
     }
 
     public void setBaseIntegrity(int baseIntegrity) {
@@ -87,8 +97,10 @@ public class V_HUD implements Disposable {
     }
 
 	public void setDeploymentsRemaining(int remaining) {
-		deploySmallUnit.setText("Send small unit (" + remaining + " left)");
+		deploySmallUnit.setText("Send small: 100 HP, speed 2 (" + remaining + " left)");
+		deployFastUnit.setText("Send fast: 200 HP, speed 4 (" + remaining + " left)");
 		deploySmallUnit.setDisabled(remaining == 0);
+		deployFastUnit.setDisabled(remaining == 0);
 	}
 
     public void drawUnitHealth(PerspectiveCamera camera, Iterable<PathUnit> units) {

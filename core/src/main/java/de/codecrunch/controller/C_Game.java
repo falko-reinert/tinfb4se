@@ -21,6 +21,8 @@ import de.codecrunch.model.ME_TileState;
 import de.codecrunch.model.M_Game;
 import de.codecrunch.model.M_Map;
 import de.codecrunch.model.tower.MA_Tower;
+import de.codecrunch.model.unit.MA_Unit;
+import de.codecrunch.model.unit.M_FastUnit;
 import de.codecrunch.model.unit.M_SmallUnit;
 import de.codecrunch.view.V_Game;
 
@@ -113,7 +115,15 @@ public class C_Game {
 	}
 
 	public boolean deploySmallUnit() {
-		if (waveResult != WaveResult.IN_PROGRESS || !spawnUnit()) return false;
+		return deployUnit(new M_SmallUnit());
+	}
+
+	public boolean deployFastUnit() {
+		return deployUnit(new M_FastUnit());
+	}
+
+	private boolean deployUnit(MA_Unit unit) {
+		if (waveResult != WaveResult.IN_PROGRESS || !spawnUnit(unit)) return false;
 		if (view != null) view.setDeploymentsRemaining(getDeploymentsRemaining());
 		return true;
 	}
@@ -164,12 +174,12 @@ public class C_Game {
 		return normalized;
 	}
 
-	private boolean spawnUnit() {
+	private boolean spawnUnit(MA_Unit unit) {
 		if (unitRoute == null || spawnedUnitCount >= WAVE_SIZE) return false;
-		PathUnit unit = new PathUnit(new M_SmallUnit(), unitRoute);
-		units.add(unit);
+		PathUnit pathUnit = new PathUnit(unit, unitRoute);
+		units.add(pathUnit);
 		spawnedUnitCount++;
-		if (view != null) view.addUnit(unit);
+		if (view != null) view.addUnit(pathUnit);
 		return true;
 	}
 

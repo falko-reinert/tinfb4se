@@ -80,6 +80,16 @@ public class C_GameTest {
 		assertEquals(0, game.getDeploymentsRemaining());
     }
 
+	@Test
+	public void playerCanDeployFastUnitWithItsOwnStats() {
+		C_Game game = new C_Game(horizontalMap(), new RecordingGameClock());
+
+		assertTrue(game.deployFastUnit());
+		assertEquals(200, game.getUnit().getUnit().getMaxLife());
+		assertEquals(4, game.getUnit().getUnit().getSpeed());
+		assertEquals(2, game.getDeploymentsRemaining());
+	}
+
     @Test
     public void activeSpawnedUnitsFollowTheRouteWithWaveSpacing() {
         C_Game game = new C_Game(longHorizontalMap(), new RecordingGameClock());
