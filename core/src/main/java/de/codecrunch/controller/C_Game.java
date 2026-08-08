@@ -28,6 +28,9 @@ import de.codecrunch.view.V_Game;
 
 public class C_Game {
 	private static final int WAVE_SIZE = 3;
+	public static final int SMALL_UNIT_COST = 1;
+	public static final int FAST_UNIT_COST = 3;
+	private static final int INITIAL_PLAYER_BUDGET = 5;
 	private static final int INITIAL_BASE_INTEGRITY = 3;
 	private static final float TURRET_TURN_DEGREES_PER_SECOND = 720f;
 	private static final float FIRE_ALIGNMENT_DEGREES = 2f;
@@ -44,6 +47,7 @@ public class C_Game {
 	private final List<TowerShot> pendingShots = new ArrayList<>();
 	private final Map<MA_Tower, Float> towerYaws = new IdentityHashMap<>();
 	private int spawnedUnitCount;
+	private int playerBudget = INITIAL_PLAYER_BUDGET;
 	private int baseIntegrity = INITIAL_BASE_INTEGRITY;
 	private UnitOutcome lastUnitOutcome;
 	private WaveResult waveResult = WaveResult.IN_PROGRESS;
@@ -76,7 +80,7 @@ public class C_Game {
 		for (PathUnit unit : units) view.addUnit(unit);
 		view.setBaseIntegrity(baseIntegrity);
 		view.setWaveResult(waveResult);
-		view.setDeploymentsRemaining(getDeploymentsRemaining());
+		updateDeploymentOptions();
 		clock.start(progression::advance);
 	}
 
@@ -114,18 +118,29 @@ public class C_Game {
 		return WAVE_SIZE - spawnedUnitCount;
 	}
 
+	public int getPlayerBudget() {
+		return playerBudget;
+	}
+
 	public boolean deploySmallUnit() {
-		return deployUnit(new M_SmallUnit());
+		return deployUnit(new M_SmallUnit(), SMALL_UNIT_COST);
 	}
 
 	public boolean deployFastUnit() {
-		return deployUnit(new M_FastUnit());
+		return deployUnit(new M_FastUnit(), FAST_UNIT_COST);
 	}
 
-	private boolean deployUnit(MA_Unit unit) {
+	private boolean deployUnit(MA_Unit unit, int cost) {
+		if (playerBudget < cost) return false;
 		if (waveResult != WaveResult.IN_PROGRESS || !spawnUnit(unit)) return false;
-		if (view != null) view.setDeploymentsRemaining(getDeploymentsRemaining());
+		playerBudget -= cost;
+		updateDeploymentOptions();
 		return true;
+	}
+
+	private void updateDeploymentOptions() {
+		if (view != null) view.setDeploymentOptions(getDeploymentsRemaining(), playerBudget,
+				SMALL_UNIT_COST, FAST_UNIT_COST);
 	}
 
 	void tick(int timerCount) {

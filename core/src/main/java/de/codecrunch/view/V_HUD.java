@@ -26,8 +26,13 @@ public class V_HUD implements Disposable {
     private final Label baseIntegrityLabel;
     private final Label unitOutcomeLabel;
     private final Label waveResultLabel;
+	private final Label playerBudgetLabel;
 	private final TextButton deploySmallUnit;
 	private final TextButton deployFastUnit;
+	private int deploymentsRemaining = 3;
+	private int playerBudget = 5;
+	private int smallUnitCost = 1;
+	private int fastUnitCost = 3;
     private final Vector3 projectedUnitPosition = new Vector3();
 
     public V_HUD(SpriteBatch sb, final Runnable exitGameAction, final Runnable replayAction,
@@ -45,6 +50,9 @@ public class V_HUD implements Disposable {
                 new Label.LabelStyle(font, Color.WHITE));
         waveResultLabel.setPosition(20f, viewport.getWorldHeight() - 95f);
         stage.addActor(waveResultLabel);
+		playerBudgetLabel = new Label("Command points: 5", new Label.LabelStyle(font, Color.WHITE));
+		playerBudgetLabel.setPosition(20f, viewport.getWorldHeight() - 125f);
+		stage.addActor(playerBudgetLabel);
         TextButton exitGame = new TextButton("Exit game", VA_Screen.uiSkin);
         exitGame.setPosition(20f, 20f);
         exitGame.addListener(new ChangeListener() {
@@ -63,7 +71,7 @@ public class V_HUD implements Disposable {
             }
         });
         stage.addActor(replay);
-		deploySmallUnit = new TextButton("Send small: 100 HP, speed 2 (3 left)", VA_Screen.uiSkin);
+		deploySmallUnit = new TextButton("Send small: 100 HP, speed 2 (cost 1)", VA_Screen.uiSkin);
 		deploySmallUnit.setPosition(300f, 20f);
 		deploySmallUnit.addListener(new ChangeListener() {
 			@Override
@@ -72,7 +80,7 @@ public class V_HUD implements Disposable {
 			}
 		});
 		stage.addActor(deploySmallUnit);
-		deployFastUnit = new TextButton("Send fast: 200 HP, speed 4 (3 left)", VA_Screen.uiSkin);
+		deployFastUnit = new TextButton("Send fast: 200 HP, speed 4 (cost 3)", VA_Screen.uiSkin);
 		deployFastUnit.setPosition(560f, 20f);
 		deployFastUnit.addListener(new ChangeListener() {
 			@Override
@@ -96,11 +104,16 @@ public class V_HUD implements Disposable {
         waveResultLabel.setColor(result == WaveResult.BASE_DESTROYED ? Color.RED : Color.WHITE);
     }
 
-	public void setDeploymentsRemaining(int remaining) {
-		deploySmallUnit.setText("Send small: 100 HP, speed 2 (" + remaining + " left)");
-		deployFastUnit.setText("Send fast: 200 HP, speed 4 (" + remaining + " left)");
-		deploySmallUnit.setDisabled(remaining == 0);
-		deployFastUnit.setDisabled(remaining == 0);
+	public void setDeploymentOptions(int remaining, int budget, int smallCost, int fastCost) {
+		deploymentsRemaining = remaining;
+		playerBudget = budget;
+		smallUnitCost = smallCost;
+		fastUnitCost = fastCost;
+		playerBudgetLabel.setText("Command points: " + budget + " | Deployments: " + remaining);
+		deploySmallUnit.setText("Send small: 100 HP, speed 2 (cost " + smallCost + ")");
+		deployFastUnit.setText("Send fast: 200 HP, speed 4 (cost " + fastCost + ")");
+		deploySmallUnit.setDisabled(remaining == 0 || budget < smallCost);
+		deployFastUnit.setDisabled(remaining == 0 || budget < fastCost);
 	}
 
     public void drawUnitHealth(PerspectiveCamera camera, Iterable<PathUnit> units) {

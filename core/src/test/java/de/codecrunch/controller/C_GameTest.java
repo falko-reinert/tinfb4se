@@ -81,13 +81,24 @@ public class C_GameTest {
     }
 
 	@Test
-	public void playerCanDeployFastUnitWithItsOwnStats() {
+    public void playerCanDeployFastUnitWithItsOwnStats() {
 		C_Game game = new C_Game(horizontalMap(), new RecordingGameClock());
 
 		assertTrue(game.deployFastUnit());
 		assertEquals(200, game.getUnit().getUnit().getMaxLife());
 		assertEquals(4, game.getUnit().getUnit().getSpeed());
 		assertEquals(2, game.getDeploymentsRemaining());
+		assertEquals(2, game.getPlayerBudget());
+	}
+
+	@Test
+	public void playerBudgetMakesFastUnitAConstrainedChoice() {
+		C_Game game = new C_Game(horizontalMap(), new RecordingGameClock());
+
+		assertTrue(game.deployFastUnit());
+		assertTrue(!game.deployFastUnit());
+		assertTrue(game.deploySmallUnit());
+		assertEquals(1, game.getPlayerBudget());
 	}
 
     @Test

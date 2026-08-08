@@ -193,8 +193,8 @@ public class V_Game extends VA_Screen {
 		v_hud.setWaveResult(result);
 	}
 
-	public void setDeploymentsRemaining(int remaining) {
-		v_hud.setDeploymentsRemaining(remaining);
+	public void setDeploymentOptions(int remaining, int budget, int smallUnitCost, int fastUnitCost) {
+		v_hud.setDeploymentOptions(remaining, budget, smallUnitCost, fastUnitCost);
 	}
 
 	private void deploySmallUnit() {
