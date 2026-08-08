@@ -26,7 +26,6 @@ import de.codecrunch.view.V_Game;
 
 public class C_Game {
 	private static final int WAVE_SIZE = 3;
-	private static final int SPAWN_INTERVAL_TICKS = 2;
 	private static final int INITIAL_BASE_INTEGRITY = 3;
 	private static final float TURRET_TURN_DEGREES_PER_SECOND = 720f;
 	private static final float FIRE_ALIGNMENT_DEGREES = 2f;
@@ -60,7 +59,6 @@ public class C_Game {
 		computer = new C_Computer(this, economy);
 		progression = new GameProgression(economy, this::tick);
 		unitRoute = UnitRoute.fromMap(map).orElse(null);
-		spawnUnit();
 	}
 
 	public void setView(V_Game view) {
@@ -76,6 +74,7 @@ public class C_Game {
 		for (PathUnit unit : units) view.addUnit(unit);
 		view.setBaseIntegrity(baseIntegrity);
 		view.setWaveResult(waveResult);
+		view.setDeploymentsRemaining(getDeploymentsRemaining());
 		clock.start(progression::advance);
 	}
 
@@ -109,10 +108,19 @@ public class C_Game {
 		return waveResult;
 	}
 
+	public int getDeploymentsRemaining() {
+		return WAVE_SIZE - spawnedUnitCount;
+	}
+
+	public boolean deploySmallUnit() {
+		if (waveResult != WaveResult.IN_PROGRESS || !spawnUnit()) return false;
+		if (view != null) view.setDeploymentsRemaining(getDeploymentsRemaining());
+		return true;
+	}
+
 	void tick(int timerCount) {
 		if (waveResult != WaveResult.IN_PROGRESS) return;
 		computer.tick(timerCount);
-		if (timerCount > 0 && timerCount % SPAWN_INTERVAL_TICKS == 0) spawnUnit();
 		for (MA_Tower tower : defendingTowers) {
 			PathUnit target = towerCombat.selectTarget(tower, units);
 			if (target != null) {
@@ -156,12 +164,13 @@ public class C_Game {
 		return normalized;
 	}
 
-	private void spawnUnit() {
-		if (unitRoute == null || spawnedUnitCount >= WAVE_SIZE) return;
+	private boolean spawnUnit() {
+		if (unitRoute == null || spawnedUnitCount >= WAVE_SIZE) return false;
 		PathUnit unit = new PathUnit(new M_SmallUnit(), unitRoute);
 		units.add(unit);
 		spawnedUnitCount++;
 		if (view != null) view.addUnit(unit);
+		return true;
 	}
 
 	private void removeResolvedUnits() {

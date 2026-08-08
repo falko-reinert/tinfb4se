@@ -26,9 +26,11 @@ public class V_HUD implements Disposable {
     private final Label baseIntegrityLabel;
     private final Label unitOutcomeLabel;
     private final Label waveResultLabel;
+	private final TextButton deploySmallUnit;
     private final Vector3 projectedUnitPosition = new Vector3();
 
-    public V_HUD(SpriteBatch sb, final Runnable exitGameAction, final Runnable replayAction){
+    public V_HUD(SpriteBatch sb, final Runnable exitGameAction, final Runnable replayAction,
+            final Runnable deploySmallUnitAction){
         viewport = new FitViewport(1024,576, new OrthographicCamera());
         stage = new Stage(viewport, sb);
         font = new BitmapFont();
@@ -60,6 +62,15 @@ public class V_HUD implements Disposable {
             }
         });
         stage.addActor(replay);
+		deploySmallUnit = new TextButton("Send small unit (3 left)", VA_Screen.uiSkin);
+		deploySmallUnit.setPosition(300f, 20f);
+		deploySmallUnit.addListener(new ChangeListener() {
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				deploySmallUnitAction.run();
+			}
+		});
+		stage.addActor(deploySmallUnit);
     }
 
     public void setBaseIntegrity(int baseIntegrity) {
@@ -74,6 +85,11 @@ public class V_HUD implements Disposable {
         waveResultLabel.setText(result.getDisplayText());
         waveResultLabel.setColor(result == WaveResult.BASE_DESTROYED ? Color.RED : Color.WHITE);
     }
+
+	public void setDeploymentsRemaining(int remaining) {
+		deploySmallUnit.setText("Send small unit (" + remaining + " left)");
+		deploySmallUnit.setDisabled(remaining == 0);
+	}
 
     public void drawUnitHealth(PerspectiveCamera camera, Iterable<PathUnit> units) {
         SpriteBatch batch = (SpriteBatch) stage.getBatch();

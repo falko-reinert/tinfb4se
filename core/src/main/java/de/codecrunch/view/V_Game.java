@@ -79,7 +79,7 @@ public class V_Game extends VA_Screen {
 	public V_Game(Runnable exitGameAction, Runnable replayAction) {
 		super();
 		this.exitGameAction = exitGameAction;
-		v_hud = new V_HUD(hudBatch, exitGameAction, replayAction);
+		v_hud = new V_HUD(hudBatch, exitGameAction, replayAction, this::deploySmallUnit);
 		inputProcessor = new InputMultiplexer(v_hud.stage, gameInputProcessor);
 	}
 
@@ -190,6 +190,14 @@ public class V_Game extends VA_Screen {
 
 	public void setWaveResult(WaveResult result) {
 		v_hud.setWaveResult(result);
+	}
+
+	public void setDeploymentsRemaining(int remaining) {
+		v_hud.setDeploymentsRemaining(remaining);
+	}
+
+	private void deploySmallUnit() {
+		if (controller != null) controller.deploySmallUnit();
 	}
 
 	@Override
