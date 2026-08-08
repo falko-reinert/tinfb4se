@@ -3,6 +3,7 @@ package de.codecrunch.controller;
 import org.junit.Test;
 
 import de.codecrunch.gameplay.GameClock;
+import de.codecrunch.gameplay.UnitOutcome;
 import de.codecrunch.model.ME_TileState;
 import de.codecrunch.model.M_Map;
 import de.codecrunch.model.tower.M_SmallTower;
@@ -73,7 +74,7 @@ public class C_GameTest {
     }
 
     @Test
-    public void spawnedUnitsFollowTheRouteWithWaveSpacing() {
+    public void activeSpawnedUnitsFollowTheRouteWithWaveSpacing() {
         C_Game game = new C_Game(horizontalMap(), new RecordingGameClock());
 
         game.update(0.5f);
@@ -82,10 +83,34 @@ public class C_GameTest {
         game.update(0.25f);
         game.tick(4);
 
-        assertEquals(3, game.getUnits().size());
-        assertEquals(2.5f, game.getUnits().get(0).getX(), 0.001f);
-        assertEquals(1.5f, game.getUnits().get(1).getX(), 0.001f);
-        assertEquals(1f, game.getUnits().get(2).getX(), 0.001f);
+        assertEquals(2, game.getUnits().size());
+        assertEquals(1.5f, game.getUnits().get(0).getX(), 0.001f);
+        assertEquals(1f, game.getUnits().get(1).getX(), 0.001f);
+        assertEquals(2, game.getBaseIntegrity());
+    }
+
+    @Test
+    public void unitThatReachesTheEndReducesBaseIntegrityOnceAndIsRemoved() {
+        C_Game game = new C_Game(horizontalMap(), new RecordingGameClock());
+
+        game.update(1f);
+        game.update(1f);
+
+        assertEquals(2, game.getBaseIntegrity());
+        assertEquals(UnitOutcome.ESCAPED, game.getLastUnitOutcome());
+        assertTrue(game.getUnits().isEmpty());
+    }
+
+    @Test
+    public void defeatedUnitIsRemovedWithoutDamagingTheBase() {
+        C_Game game = new C_Game(horizontalMap(), new RecordingGameClock());
+        game.getUnit().getUnit().takeDamage(100);
+
+        game.update(0.1f);
+
+        assertEquals(3, game.getBaseIntegrity());
+        assertEquals(UnitOutcome.DEFEATED, game.getLastUnitOutcome());
+        assertTrue(game.getUnits().isEmpty());
     }
 
     private M_Map horizontalMap() {

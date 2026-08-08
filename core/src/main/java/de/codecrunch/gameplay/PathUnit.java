@@ -24,9 +24,11 @@ public final class PathUnit {
         if (deltaSeconds <= 0 || !isRunning()) return;
 
         float routeLength = route.size() - 1;
-        distance = Math.min(routeLength, distance + unit.getSpeed() * deltaSeconds);
-        if (distance >= routeLength) {
+        float exitDistance = Math.max(0f, routeLength - 0.5f);
+        distance = Math.min(exitDistance, distance + unit.getSpeed() * deltaSeconds);
+        if (distance >= exitDistance) {
             finished = true;
+            distance = routeLength;
             x = route.getX(route.size() - 1);
             y = route.getY(route.size() - 1);
             return;

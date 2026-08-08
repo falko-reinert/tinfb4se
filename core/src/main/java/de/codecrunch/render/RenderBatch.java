@@ -17,4 +17,8 @@ public class RenderBatch extends ModelBatch {
     public void addElement(ModelInstance instance) {
         instances.add(instance);
     }
+
+    public void removeElement(ModelInstance instance) {
+        instances.remove(instance);
+    }
 }

@@ -22,6 +22,7 @@ import java.util.Map;
 import de.codecrunch.Model3DFactory;
 import de.codecrunch.controller.C_Game;
 import de.codecrunch.gameplay.PathUnit;
+import de.codecrunch.gameplay.UnitOutcome;
 import de.codecrunch.model.M_Map;
 import de.codecrunch.model.tower.MA_Tower;
 import de.codecrunch.render.RenderBatch;
@@ -95,9 +96,6 @@ public class V_Game extends VA_Screen {
 	public void addUnit(PathUnit unit) {
 		ModelInstance unitModel = Model3DFactory.instantiate(
 				Model3DFactory.loadModel("towers/stub.g3db"));
-		for (Material material : unitModel.materials) {
-			material.set(ColorAttribute.createDiffuse(Color.RED));
-		}
 		unitBatch.addElement(unitModel);
 		unitModels.put(unit, unitModel);
 		updateUnit(unit);
@@ -109,6 +107,29 @@ public class V_Game extends VA_Screen {
 		unitModel.transform.setToTranslation(
 				unit.getX() * TILE_DISTANCE, 1f, unit.getY() * TILE_DISTANCE);
 		unitModel.transform.scale(0.5f, 0.5f, 0.5f);
+		float healthRatio = Math.max(0f, Math.min(1f,
+				(float) unit.getUnit().getCurrentLife() / unit.getUnit().getMaxLife()));
+		for (Material material : unitModel.materials) {
+			ColorAttribute diffuse = (ColorAttribute) material.get(ColorAttribute.Diffuse);
+			if (diffuse == null) {
+				material.set(ColorAttribute.createDiffuse(1f - healthRatio, healthRatio, 0f, 1f));
+			} else {
+				diffuse.color.set(1f - healthRatio, healthRatio, 0f, 1f);
+			}
+		}
+	}
+
+	public void removeUnit(PathUnit unit) {
+		ModelInstance unitModel = unitModels.remove(unit);
+		if (unitModel != null) unitBatch.removeElement(unitModel);
+	}
+
+	public void setBaseIntegrity(int baseIntegrity) {
+		v_hud.setBaseIntegrity(baseIntegrity);
+	}
+
+	public void setUnitOutcome(UnitOutcome outcome) {
+		v_hud.setUnitOutcome(outcome);
 	}
 
 	@Override
@@ -150,6 +171,7 @@ public class V_Game extends VA_Screen {
 		unitBatch.end();
 		hudBatch.setProjectionMatrix(v_hud.stage.getCamera().combined);
 		v_hud.stage.draw();
+		if (controller != null) v_hud.drawUnitHealth(camera, controller.getUnits());
 
 	}
 

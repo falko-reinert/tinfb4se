@@ -44,10 +44,21 @@ public class PathUnitTest {
         assertEquals(1.5f, unit.getX(), 0.001f);
         assertEquals(1f, unit.getY(), 0.001f);
 
-        unit.update(0.5f);
+        unit.update(0.49f);
         assertEquals(2f, unit.getX(), 0.001f);
-        assertEquals(1.5f, unit.getY(), 0.001f);
+        assertEquals(1.48f, unit.getY(), 0.001f);
         assertFalse(unit.isFinished());
+    }
+
+    @Test
+    public void unitEscapesWhenItEntersTheExitTile() {
+        PathUnit unit = new PathUnit(new M_SmallUnit(), route());
+
+        unit.update(0.75f);
+
+        assertTrue(unit.isFinished());
+        assertEquals(2f, unit.getX(), 0.001f);
+        assertEquals(2f, unit.getY(), 0.001f);
     }
 
     @Test
