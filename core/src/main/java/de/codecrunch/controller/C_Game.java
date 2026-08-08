@@ -16,6 +16,7 @@ import de.codecrunch.gameplay.TowerCombat;
 import de.codecrunch.gameplay.TowerShot;
 import de.codecrunch.gameplay.UnitOutcome;
 import de.codecrunch.gameplay.UnitRoute;
+import de.codecrunch.gameplay.WaveResult;
 import de.codecrunch.model.ME_TileState;
 import de.codecrunch.model.M_Game;
 import de.codecrunch.model.M_Map;
@@ -44,6 +45,7 @@ public class C_Game {
 	private int spawnedUnitCount;
 	private int baseIntegrity = INITIAL_BASE_INTEGRITY;
 	private UnitOutcome lastUnitOutcome;
+	private WaveResult waveResult = WaveResult.IN_PROGRESS;
 	private V_Game view;
 	private M_Map map;
 
@@ -73,10 +75,12 @@ public class C_Game {
 		for (MA_Tower tower : defendingTowers) view.addTower(tower);
 		for (PathUnit unit : units) view.addUnit(unit);
 		view.setBaseIntegrity(baseIntegrity);
+		view.setWaveResult(waveResult);
 		clock.start(progression::advance);
 	}
 
 	public void update(float deltaSeconds) {
+		if (waveResult != WaveResult.IN_PROGRESS) return;
 		for (PathUnit unit : units) {
 			unit.update(deltaSeconds);
 			if (view != null) view.updateUnit(unit);
@@ -101,7 +105,12 @@ public class C_Game {
 		return lastUnitOutcome;
 	}
 
+	public WaveResult getWaveResult() {
+		return waveResult;
+	}
+
 	void tick(int timerCount) {
+		if (waveResult != WaveResult.IN_PROGRESS) return;
 		computer.tick(timerCount);
 		if (timerCount > 0 && timerCount % SPAWN_INTERVAL_TICKS == 0) spawnUnit();
 		for (MA_Tower tower : defendingTowers) {
@@ -171,6 +180,22 @@ public class C_Game {
 			if (view != null) view.removeUnit(unit);
 			iterator.remove();
 		}
+		finishWaveIfNeeded();
+	}
+
+	private void finishWaveIfNeeded() {
+		if (baseIntegrity <= 0) {
+			finishWave(WaveResult.BASE_DESTROYED);
+		} else if (spawnedUnitCount == WAVE_SIZE && units.isEmpty()) {
+			finishWave(WaveResult.COMPLETE);
+		}
+	}
+
+	private void finishWave(WaveResult result) {
+		if (waveResult != WaveResult.IN_PROGRESS) return;
+		waveResult = result;
+		clock.stop();
+		if (view != null) view.setWaveResult(result);
 	}
 
 	void addDefendingTower(MA_Tower tower) {

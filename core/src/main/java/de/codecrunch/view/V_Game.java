@@ -29,6 +29,7 @@ import de.codecrunch.Model3DFactory;
 import de.codecrunch.controller.C_Game;
 import de.codecrunch.gameplay.PathUnit;
 import de.codecrunch.gameplay.UnitOutcome;
+import de.codecrunch.gameplay.WaveResult;
 import de.codecrunch.model.ME_TileState;
 import de.codecrunch.model.M_Map;
 import de.codecrunch.model.tower.MA_Tower;
@@ -185,6 +186,10 @@ public class V_Game extends VA_Screen {
 
 	public void setUnitOutcome(UnitOutcome outcome) {
 		v_hud.setUnitOutcome(outcome);
+	}
+
+	public void setWaveResult(WaveResult result) {
+		v_hud.setWaveResult(result);
 	}
 
 	@Override

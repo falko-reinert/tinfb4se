@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import de.codecrunch.gameplay.GameClock;
 import de.codecrunch.gameplay.UnitOutcome;
+import de.codecrunch.gameplay.WaveResult;
 import de.codecrunch.model.ME_TileState;
 import de.codecrunch.model.M_Map;
 import de.codecrunch.model.tower.M_SmallTower;
@@ -116,6 +117,32 @@ public class C_GameTest {
         assertEquals(3, game.getBaseIntegrity());
         assertEquals(UnitOutcome.DEFEATED, game.getLastUnitOutcome());
         assertTrue(game.getUnits().isEmpty());
+    }
+
+    @Test
+    public void waveCompletesAfterEverySpawnedUnitIsDefeated() {
+        C_Game game = new C_Game(horizontalMap(), new RecordingGameClock());
+        game.tick(2);
+        game.tick(4);
+        for (int i = 0; i < 3; i++) {
+            game.getUnits().get(0).getUnit().takeDamage(100);
+            game.update(0f);
+        }
+
+        assertEquals(WaveResult.COMPLETE, game.getWaveResult());
+        assertEquals(3, game.getBaseIntegrity());
+    }
+
+    @Test
+    public void waveFailsWhenAllThreeUnitsReachTheBase() {
+        C_Game game = new C_Game(horizontalMap(), new RecordingGameClock());
+        game.tick(2);
+        game.tick(4);
+
+        game.update(2f);
+
+        assertEquals(WaveResult.BASE_DESTROYED, game.getWaveResult());
+        assertEquals(0, game.getBaseIntegrity());
     }
 
     private M_Map horizontalMap() {
