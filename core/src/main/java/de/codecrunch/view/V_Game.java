@@ -30,6 +30,7 @@ import de.codecrunch.controller.C_Game;
 import de.codecrunch.gameplay.PathUnit;
 import de.codecrunch.gameplay.UnitOutcome;
 import de.codecrunch.gameplay.WaveResult;
+import de.codecrunch.gameplay.planning.PlanningSnapshot;
 import de.codecrunch.model.ME_TileState;
 import de.codecrunch.model.M_Map;
 import de.codecrunch.model.tower.MA_Tower;
@@ -80,7 +81,9 @@ public class V_Game extends VA_Screen {
 		super();
 		this.exitGameAction = exitGameAction;
 		v_hud = new V_HUD(hudBatch, exitGameAction, replayAction,
-				this::deploySmallUnit, this::deployFastUnit);
+				this::deploySmallUnit, this::deployFastUnit,
+				this::cyclePlanningUnit, this::adjustPlanningTime,
+				this::submitAttackPlan);
 		inputProcessor = new InputMultiplexer(v_hud.stage, gameInputProcessor);
 	}
 
@@ -197,12 +200,28 @@ public class V_Game extends VA_Screen {
 		v_hud.setDeploymentOptions(remaining, budget, smallUnitCost, fastUnitCost);
 	}
 
+	public void setPlanningState(PlanningSnapshot planningSnapshot) {
+		v_hud.setPlanningState(planningSnapshot);
+	}
+
 	private void deploySmallUnit() {
 		if (controller != null) controller.deploySmallUnit();
 	}
 
 	private void deployFastUnit() {
 		if (controller != null) controller.deployFastUnit();
+	}
+
+	private void cyclePlanningUnit(int slotIndex) {
+		if (controller != null) controller.cyclePlanningUnit(slotIndex);
+	}
+
+	private void adjustPlanningTime(int slotIndex, int gridSteps) {
+		if (controller != null) controller.adjustPlanningTime(slotIndex, gridSteps);
+	}
+
+	private void submitAttackPlan() {
+		if (controller != null) controller.submitAttackPlan();
 	}
 
 	@Override

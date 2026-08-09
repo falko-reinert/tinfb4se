@@ -17,6 +17,10 @@ import de.codecrunch.gameplay.TowerShot;
 import de.codecrunch.gameplay.UnitOutcome;
 import de.codecrunch.gameplay.UnitRoute;
 import de.codecrunch.gameplay.WaveResult;
+import de.codecrunch.gameplay.planning.AttackPlanningSession;
+import de.codecrunch.gameplay.planning.PlanningSnapshot;
+import de.codecrunch.gameplay.simulation.plan.DeploymentPlan;
+import de.codecrunch.gameplay.simulation.spec.ScenarioSpec;
 import de.codecrunch.model.ME_TileState;
 import de.codecrunch.model.M_Game;
 import de.codecrunch.model.M_Map;
@@ -52,6 +56,7 @@ public class C_Game {
 	private UnitOutcome lastUnitOutcome;
 	private WaveResult waveResult = WaveResult.IN_PROGRESS;
 	private boolean computerEnabled = true;
+	private AttackPlanningSession planningSession;
 	private V_Game view;
 	private M_Map map;
 
@@ -85,11 +90,13 @@ public class C_Game {
 		for (PathUnit unit : units) view.addUnit(unit);
 		view.setEnemyBaseIntegrity(enemyBaseIntegrity);
 		view.setWaveResult(waveResult);
-		updateDeploymentOptions();
+		if (planningSession == null) updateDeploymentOptions();
+		else view.setPlanningState(planningSession.snapshot());
 		clock.start(progression::advance);
 	}
 
 	public void update(float deltaSeconds) {
+		if (planningSession != null) return;
 		if (waveResult != WaveResult.IN_PROGRESS) return;
 		for (PathUnit unit : units) {
 			unit.update(deltaSeconds);
@@ -128,11 +135,51 @@ public class C_Game {
 	}
 
 	public boolean deploySmallUnit() {
+		if (planningSession != null) return false;
 		return deployUnit(new M_SmallUnit(), SMALL_UNIT_COST);
 	}
 
 	public boolean deployFastUnit() {
+		if (planningSession != null) return false;
 		return deployUnit(new M_FastUnit(), FAST_UNIT_COST);
+	}
+
+	public void enableAttackPlanning(ScenarioSpec scenario) {
+		if (spawnedUnitCount > 0) {
+			throw new IllegalStateException("Planning must be enabled before deployments");
+		}
+		planningSession = new AttackPlanningSession(scenario);
+	}
+
+	public PlanningSnapshot getPlanningSnapshot() {
+		return planningSession == null ? null : planningSession.snapshot();
+	}
+
+	public void cyclePlanningUnit(int slotIndex) {
+		if (planningSession == null) return;
+		planningSession.cycleUnitType(slotIndex);
+		updatePlanningView();
+	}
+
+	public void adjustPlanningTime(int slotIndex, int gridSteps) {
+		if (planningSession == null) return;
+		planningSession.adjustSpawnTick(slotIndex, gridSteps);
+		updatePlanningView();
+	}
+
+	public boolean submitAttackPlan() {
+		if (planningSession == null) return false;
+		boolean accepted = planningSession.submit();
+		updatePlanningView();
+		return accepted;
+	}
+
+	public DeploymentPlan getSubmittedAttackPlan() {
+		return planningSession == null ? null : planningSession.getSubmittedPlan();
+	}
+
+	private void updatePlanningView() {
+		if (view != null) view.setPlanningState(planningSession.snapshot());
 	}
 
 	private boolean deployUnit(MA_Unit unit, int cost) {
@@ -149,6 +196,7 @@ public class C_Game {
 	}
 
 	void tick(int timerCount) {
+		if (planningSession != null) return;
 		if (waveResult != WaveResult.IN_PROGRESS) return;
 		if (computerEnabled) computer.tick(timerCount);
 		for (MA_Tower tower : defendingTowers) {

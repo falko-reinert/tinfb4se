@@ -23,6 +23,8 @@ import de.codecrunch.view.V_GameLevelSelect;
 import de.codecrunch.view.V_Menu;
 import de.codecrunch.view.V_Settings;
 import de.codecrunch.gameplay.CombatDemoMap;
+import de.codecrunch.gameplay.simulation.ReferenceScenario;
+import de.codecrunch.gameplay.simulation.spec.ScenarioSpec;
 import de.codecrunch.model.tower.M_MediumTower;
 
 public class TowerAttackGame extends Game implements ScreenNavigator {
@@ -100,17 +102,18 @@ public class TowerAttackGame extends Game implements ScreenNavigator {
         disposeScreen(previousScreen);
     }
 
-    public void startGame(M_Map map) {
+	public void startGame(M_Map map) {
 		M_Map initialMap = copyMap(map);
-		startGame(copyMap(initialMap), () -> startGame(copyMap(initialMap)), null, true);
+		startGame(copyMap(initialMap), () -> startGame(copyMap(initialMap)), null, true, null);
 	}
 
 	private void startCombatDemo() {
-		startGame(CombatDemoMap.create(), this::startCombatDemo, new M_MediumTower(), false);
+		startGame(CombatDemoMap.create(), this::startCombatDemo,
+				new M_MediumTower(), false, ReferenceScenario.create());
 	}
 
 	private void startGame(M_Map map, Runnable replayAction, M_MediumTower startingTower,
-			boolean computerEnabled) {
+			boolean computerEnabled, ScenarioSpec planningScenario) {
         //Loads 3d Models -> May be put in loading screen later.
         Model3DFactory.setup();
 
@@ -118,6 +121,7 @@ public class TowerAttackGame extends Game implements ScreenNavigator {
         C_Game nextGame = new C_Game(map);
 		if (!computerEnabled) nextGame.disableComputer();
 		if (startingTower != null) nextGame.addStartingTower(startingTower, 7, 6);
+		if (planningScenario != null) nextGame.enableAttackPlanning(planningScenario);
         nextGame.setView(nextScreen);
         nextScreen.setController(nextGame);
         nextGame.start();

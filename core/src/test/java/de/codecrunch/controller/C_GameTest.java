@@ -5,6 +5,8 @@ import org.junit.Test;
 import de.codecrunch.gameplay.GameClock;
 import de.codecrunch.gameplay.UnitOutcome;
 import de.codecrunch.gameplay.WaveResult;
+import de.codecrunch.gameplay.planning.PlanningSnapshot;
+import de.codecrunch.gameplay.simulation.ReferenceScenario;
 import de.codecrunch.model.ME_TileState;
 import de.codecrunch.model.M_Map;
 import de.codecrunch.model.tower.M_SmallTower;
@@ -12,11 +14,29 @@ import de.codecrunch.model.tower.M_SmallTower;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class C_GameTest {
+	@Test
+	public void planningModeValidatesAndHandsOffWithoutSpawningLegacyUnits() {
+		C_Game game = new C_Game(longHorizontalMap(), new RecordingGameClock());
+		game.enableAttackPlanning(ReferenceScenario.create());
+
+		PlanningSnapshot planning = game.getPlanningSnapshot();
+
+		assertTrue(planning.isValid());
+		assertFalse(game.deploySmallUnit());
+		assertFalse(game.deployFastUnit());
+		assertTrue(game.submitAttackPlan());
+		assertNotNull(game.getSubmittedAttackPlan());
+		assertTrue(game.getPlanningSnapshot().isSubmitted());
+		assertTrue(game.getUnits().isEmpty());
+		assertEquals(WaveResult.IN_PROGRESS, game.getWaveResult());
+	}
+
     @Test
     public void disposeStopsTheOwnedGameClock() {
         RecordingGameClock clock = new RecordingGameClock();
